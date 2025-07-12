@@ -1,6 +1,7 @@
 package io.backendscience.rinha_backend_2025_java.adapter.outbound;
 
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
+import io.backendscience.rinha_backend_2025_java.domain.PaymentType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
@@ -24,7 +25,7 @@ public class PaymentProcessorGateway {
     @Qualifier("webClientFallback")
     private final WebClient webClientFallback;
 
-    public void savePaymentDefault(PaymentDetail payIn) {
+    public PaymentType savePaymentDefault(PaymentDetail payIn) {
 
         PaymentDetailToSend payOut = new PaymentDetailToSend(
                 payIn.correlationId(), payIn.amount(), payIn.requestedAt().format(DateTimeFormatter.ISO_INSTANT));
@@ -35,11 +36,11 @@ public class PaymentProcessorGateway {
                 .uri("/payments")
                 .bodyValue(payOut)
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, success -> {
-                    //logger.info("SUCCESS to send: " + success.statusCode());
-                    // Handle Todo not found (404) or other errors
-                    return Mono.empty();
-                })
+//                .onStatus(HttpStatusCode::is2xxSuccessful, success -> {
+//                    //logger.info("SUCCESS to send: " + success.statusCode());
+//                    // Handle Todo not found (404) or other errors
+//                    return Mono.empty();
+//                })
                 .onStatus(HttpStatusCode::is4xxClientError, error -> {
                     logger.info("Error 400 to send: " + error.statusCode());
                     // Handle Todo not found (404) or other errors
@@ -90,8 +91,20 @@ public class PaymentProcessorGateway {
             //                    // Handle Todo not found (404) or other errors
             //                    return Mono.error(new RuntimeException("Error in Payment Processor"));
             //                });
+
+            if (retorno2 != null && !retorno2.isBlank()) {
+//                System.out.println("retorno2: " + retorno2);
+                return PaymentType.FALLBACK;
+            }
+        } else {
+//            System.out.println("retorno: " + retorno);
+            return PaymentType.DEFAULT;
         }
-        // System.out.println(retorno);
+
+        System.out.println(retorno);
+
+        throw new RuntimeException("deu erro");
+        //
     }
 
     private record PaymentDetailToSend(String correlationId, BigDecimal amount, String requestedAt) {}

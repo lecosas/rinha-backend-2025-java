@@ -18,6 +18,8 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @RestController
@@ -27,23 +29,34 @@ public class PaymentsController {
     private final SavePaymentDefaultUC savePayUC;
     private final GetPaymentSummaryUC getPaySumUC;
     private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
+    private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
     @PostMapping("/payments")
     public ResponseEntity<String> postPaymentsController(@RequestBody PaymentBody paymentBody) {
         logger.info("Controller POST_PAYMENT: " + paymentBody);
 
-        PaymentDetail paymentDetail =
-                new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
+        //return ResponseEntity.ok().build();
+//
 
-        savePayUC.execute(paymentDetail);
+        executorService.execute(() -> {
+            PaymentDetail paymentDetail =
+                    new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
 
-        return ResponseEntity.ok(paymentDetail.correlationId());
+            savePayUC.execute(paymentDetail);
+        });
+
+
+
+        //return ResponseEntity.ok(paymentDetail.correlationId());
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/payments-summary")
     public ResponseEntity<PaymentsSummary> getPaymentsSummary(
             @RequestParam(value = "from", required = false) String from,
             @RequestParam(value = "to", required = false) String to) {
+
+        long startTime = System.nanoTime();
 
         logger.info(String.format("Controller PAYMENT_SUMMARY: from %s to %s", from, to));
 
@@ -57,6 +70,9 @@ public class PaymentsController {
         PaymentsSummary res = new PaymentsSummary(
                 new PaymentsSummaryDetail(countDefault.requests(), countDefault.amount()),
                 new PaymentsSummaryDetail(countFallback.requests(), countFallback.amount()));
+
+        logger.info(String.format(
+                "Controller PAYMENT_SUMMARY: takes %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
 
         return ResponseEntity.ok(res);
     }
