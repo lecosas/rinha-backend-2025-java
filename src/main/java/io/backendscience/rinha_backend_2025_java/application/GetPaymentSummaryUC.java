@@ -1,7 +1,5 @@
 package io.backendscience.rinha_backend_2025_java.application;
 
-import io.backendscience.rinha_backend_2025_java.adapter.inbound.PaymentsController;
-import io.backendscience.rinha_backend_2025_java.adapter.outbound.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.adapter.outbound.resources.SummaryPaymentResponse;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummaryTotal;
 import lombok.RequiredArgsConstructor;
@@ -16,56 +14,16 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Logger;
 
 @Component
 @RequiredArgsConstructor
 public class GetPaymentSummaryUC {
 
-    private final PaymentRepository paymentRepository;
     private final Logger logger = Logger.getLogger(GetPaymentSummaryUC.class.getName());
     private final JedisPooled jedisPooled;
 
-//    public Map<Integer, PaymentSummaryTotal> execute(String from, String to) {
-//        Map<Integer, PaymentSummaryTotal> map = new HashMap<>();
-//        List<SummaryPaymentResponse> res;
-//
-//        OffsetDateTime fromOffset;
-//        OffsetDateTime toOffset;
-//
-//        if (from != null && !from.isBlank()) {
-//            from = from.endsWith("Z") ? from : from + "Z";
-//            fromOffset = OffsetDateTime.parse(from);
-//        } else {
-//            fromOffset = null;
-//        }
-//
-//        if (to != null && !to.isBlank()) {
-//            to = to.endsWith("Z") ? to : to + "Z";
-//            toOffset = OffsetDateTime.parse(to);
-//        } else {
-//            toOffset = null;
-//        }
-//
-//        res =  paymentRepository.sumAmountBetween(fromOffset, toOffset);
-//
-//        for (SummaryPaymentResponse info : res) {
-//            Integer type = info.type();
-//            BigDecimal sum = info.sum();
-//            Long count = info.count();
-//            map.put(type, new PaymentSummaryTotal(count, sum));
-//        }
-//
-//        return map;
-//    }
-
     public Map<Integer, PaymentSummaryTotal> execute(String from, String to) {
-
-
-//        TSRangeParams rangeParams = TSRangeParams
-//                .rangeParams();
-
         Map<Integer, PaymentSummaryTotal> map = new HashMap<>();
         List<SummaryPaymentResponse> res;
 
@@ -105,13 +63,6 @@ public class GetPaymentSummaryUC {
 
         map.put(0, new PaymentSummaryTotal(countDefault, BigDecimal.valueOf(countDefault).multiply(BigDecimal.valueOf(19.9))));
         map.put(1, new PaymentSummaryTotal(countFallback, BigDecimal.valueOf(countFallback).multiply(BigDecimal.valueOf(19.9))));
-//
-//        for (SummaryPaymentResponse info : res) {
-//            Integer type = info.type();
-//            BigDecimal sum = info.sum();
-//            Long count = info.count();
-//            map.put(type, new PaymentSummaryTotal(count, sum));
-//        }
 
         return map;
     }
