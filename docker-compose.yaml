@@ -16,14 +16,19 @@ services:
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
       - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=400
       - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=400
+      - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - REDIS_URL=http://redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
     deploy:
       resources:
         limits:
-          cpus: "0.6"
-          memory: "128MB"
-        reservations:
-          cpus: "0.6"
-          memory: "128MB"
+#          cpus: "0.6"
+#          memory: "150MB"
+          cpus: "2"
+          memory: "2048MB"
 
   redis:
     image: redis:8.0.3-alpine3.21
@@ -38,11 +43,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+#      start_period: 5s
     deploy:
       resources:
         limits:
-          cpus: "0.25"
-          memory: "128MB"
+          cpus: "0.2"
+          memory: "15MB"
 
 networks:
   backend-rinha:

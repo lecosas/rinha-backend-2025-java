@@ -17,11 +17,11 @@ import java.util.logging.Logger;
 @Configuration
 public class WebClientConfig {
 
-    @Value("${base.path.urlDefault}")
-    private String basePathUrlDefault;
+    @Value("${payment-processor.defaultUrl}")
+    private String paymentProcessorDefaultUrl;
 
-    @Value("${base.path.urlFallback}")
-    private String basePathUrlFallback;
+    @Value("${payment-processor.fallbackUrl}")
+    private String paymentProcessorFallbackUrl;
 
     @Value("${httpclient.connection-timeout:5000}")
     private int connectionTimeout;
@@ -73,7 +73,7 @@ public class WebClientConfig {
 
         return WebClient.builder()
             .clientConnector(new ReactorClientHttpConnector(httpClient))
-            .baseUrl(basePathUrlDefault)
+            .baseUrl(paymentProcessorDefaultUrl)
             //.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .build();
     }
@@ -111,7 +111,7 @@ public class WebClientConfig {
 
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(basePathUrlFallback)
+                .baseUrl(paymentProcessorFallbackUrl)
                 //.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
