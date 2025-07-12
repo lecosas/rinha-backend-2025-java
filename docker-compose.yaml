@@ -27,8 +27,8 @@ services:
         limits:
 #          cpus: "0.6"
 #          memory: "150MB"
-          cpus: "2"
-          memory: "2048MB"
+          cpus: "1.5"
+          memory: "400MB"
 
   redis:
     image: redis:8.0.3-alpine3.21
