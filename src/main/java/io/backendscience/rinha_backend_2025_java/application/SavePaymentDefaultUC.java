@@ -22,6 +22,7 @@ public class SavePaymentDefaultUC {
         PaymentType paymentType = paymentPort.savePaymentDefault(paymentDetail);
 
         jedisPooled.tsAdd("payments:type:" + paymentType.getValue() + ":count", paymentDetail.requestedAt().toInstant().toEpochMilli(), 1);
+        //jedisPooled.tsAdd("payments:type:0:count", paymentDetail.requestedAt().toInstant().toEpochMilli(), 1);
 
         logger.info("Finish saving PAYMENT_DETAIL: " + paymentDetail);
     }

@@ -2,6 +2,7 @@ package io.backendscience.rinha_backend_2025_java.application;
 
 import io.backendscience.rinha_backend_2025_java.adapter.outbound.resources.SummaryPaymentResponse;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummaryTotal;
+import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import redis.clients.jedis.JedisPooled;
@@ -50,6 +51,10 @@ public class GetPaymentSummaryUC {
 
         long countDefault = 0;
         long countFallback = 0;
+
+//        RedisCommands<String, String> commands = connection.sync();
+//
+//        String value = commands.getrange("payments:type:0:count",);
 
         List<TSElement> type0 = jedisPooled.tsRange("payments:type:0:count", rangeParams);
         if (type0 != null && !type0.isEmpty()) {
