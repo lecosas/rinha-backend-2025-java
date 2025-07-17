@@ -37,7 +37,8 @@ services:
       - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=400
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
-      - REDIS_URL=http://redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       redis:
         condition: service_healthy
@@ -50,8 +51,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.8"
-          memory: "512MB"
+          cpus: "0.6"
+          memory: "160MB"
 
   backend-02:
     <<: *backend
@@ -76,7 +77,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: "30MB"
+          memory: "20MB"
 
 networks:
   backend:

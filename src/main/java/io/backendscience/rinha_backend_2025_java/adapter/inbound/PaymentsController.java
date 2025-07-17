@@ -33,7 +33,7 @@ public class PaymentsController {
     private final PurgePaymentsUC purgePaymentsUC;
     private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
-//    private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
+    //private final ExecutorService executorService = Executors.newFixedThreadPool(1000);
     private final Worker worker;
 
     @PostMapping("/payments")
@@ -60,8 +60,8 @@ public class PaymentsController {
 
     @GetMapping("/payments-summary")
     public ResponseEntity<PaymentsSummary> getPaymentsSummary(
-            @RequestParam(value = "from", required = false) String from,
-            @RequestParam(value = "to", required = false) String to) {
+            @RequestParam(value = "from", required = false) OffsetDateTime from,
+            @RequestParam(value = "to", required = false) OffsetDateTime to) {
 
         long startTime = System.nanoTime();
 
