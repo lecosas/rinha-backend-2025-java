@@ -43,11 +43,11 @@ public class PaymentsController {
         //return ResponseEntity.ok().build();
 //
 
-          executorService.execute(() -> {
+        executorService.execute(() -> {
             PaymentDetail paymentDetail =
                     new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
 
-            //worker.workerQueue.add(paymentDetail);
+//            worker.workerQueue.add(paymentDetail);
 
             savePayUC.execute(paymentDetail);
         });

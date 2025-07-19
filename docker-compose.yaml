@@ -17,7 +17,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: "20MB"
+          memory: "40MB"
 
   backend-01: &backend
     image: rinha-backend-2025:0.1
@@ -51,8 +51,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.6"
-          memory: "160MB"
+          cpus: "0.8"
+          memory: "256MB"
 
   backend-02:
     <<: *backend

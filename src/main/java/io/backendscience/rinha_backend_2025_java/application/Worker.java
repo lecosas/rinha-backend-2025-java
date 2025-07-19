@@ -24,7 +24,7 @@ public class Worker implements CommandLineRunner {
     private final Logger logger = Logger.getLogger(Worker.class.getName());
     private final SavePaymentDefaultUC savePayUC;
 //    private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
+//    private final ExecutorService executorService = Executors.newFixedThreadPool(2000);
 
 //    public void work() {
 //

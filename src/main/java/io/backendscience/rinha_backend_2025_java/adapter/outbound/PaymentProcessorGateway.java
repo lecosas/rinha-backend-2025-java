@@ -75,7 +75,7 @@ public class PaymentProcessorGateway {
                     })
                     .toEntity(String.class);
 
-            if (retorno.getStatusCode().is2xxSuccessful()) {
+            if (retorno2.getStatusCode().is2xxSuccessful()) {
 //                System.out.println("retorno2: " + retorno2);
                 return PaymentType.FALLBACK;
             }
