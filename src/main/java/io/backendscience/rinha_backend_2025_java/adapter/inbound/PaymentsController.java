@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.backendscience.rinha_backend_2025_java.application.GetPaymentSummaryUC;
 import io.backendscience.rinha_backend_2025_java.application.PurgePaymentsUC;
 import io.backendscience.rinha_backend_2025_java.application.SavePaymentDefaultUC;
-import io.backendscience.rinha_backend_2025_java.application.Worker;
+import io.backendscience.rinha_backend_2025_java.application.PaymentWorker;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummaryTotal;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentType;
@@ -34,28 +34,43 @@ public class PaymentsController {
     private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
     //private final ExecutorService executorService = Executors.newFixedThreadPool(1000);
-    private final Worker worker;
+    private final PaymentWorker paymentWorker;
 
     @PostMapping("/payments")
     public ResponseEntity<String> postPaymentsController(@RequestBody PaymentBody paymentBody) {
-        //logger.info("Controller POST_PAYMENT: " + paymentBody);
+//        logger.info("Controller POST_PAYMENT: " + paymentBody);
 
         //return ResponseEntity.ok().build();
 //
 
-        executorService.execute(() -> {
-            PaymentDetail paymentDetail =
-                    new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
+        PaymentDetail paymentDetail =
+                new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
 
-//            worker.workerQueue.add(paymentDetail);
+        paymentWorker.workerQueue.add(paymentDetail);
 
-            savePayUC.execute(paymentDetail);
-        });
+//        executorService.execute(() -> {
+//            PaymentDetail paymentDetail =
+//                    new PaymentDetail(paymentBody.correlationId, paymentBody.amount, OffsetDateTime.now(ZoneOffset.UTC));
+//
+////            worker.workerQueue.add(paymentDetail);
+//
+//            try {
+//                savePayUC.execute(paymentDetail);
+//            } catch (Exception e) {
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException ex) {
+//                    throw new RuntimeException(ex);
+//                }
+//                paymentWorker.workerQueue.add(paymentDetail);
+//            }
+//        });
 
 
 
+        logger.info("FIM Controller POST_PAYMENT: " + paymentBody);
         //return ResponseEntity.ok(paymentDetail.correlationId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/payments-summary")
@@ -65,6 +80,9 @@ public class PaymentsController {
 
         long startTime = System.nanoTime();
 
+//        if (from == null && to == null) {
+        logger.severe(String.format("QUEUE SIZE v2: %s", paymentWorker.workerQueue.size()));
+//        }
         logger.info(String.format("Controller PAYMENT_SUMMARY: from %s to %s", from, to));
 
         Map<Integer, PaymentSummaryTotal> map = getPaySumUC.execute(from, to);
