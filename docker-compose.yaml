@@ -8,16 +8,14 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - backend-01
-#        condition: service_healthy
       - backend-02
-#        condition: service_healthy
     networks:
       - backend
     deploy:
       resources:
         limits:
-          cpus: "0.2"
-          memory: "40MB"
+          cpus: "0.5"
+          memory: "50MB"
 
   backend-01: &backend
     image: rinha-backend-2025:0.1
@@ -30,6 +28,7 @@ services:
 #      - "9998:8080"
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
+      - HEALTH_CHECK_ENGINE=true
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
@@ -51,20 +50,31 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.7"
-          memory: "200MB"
-#          cpus: "1.7"
-#          memory: "2200MB"
+          cpus: "0.65"
+          memory: "160MB"
+#          cpus: "2.7"
+#          memory: "3200MB"
 
   backend-02:
     <<: *backend
     container_name: backend-02
     hostname: backend-02
+    environment:
+      - HEALTH_CHECK_ENGINE=false
+      - HTTPCLIENT_CONNECTION_TIMEOUT=5000
+      - HTTPCLIENT_READ_TIMEOUT=10000
+      - HTTPCLIENT_SOCKET_TIMEOUT=10000
+      - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=400
+      - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=400
+      - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
+      - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
 
   redis:
     image: redis:8.0.3-alpine3.21
     container_name: redis
-    #command: redis-server --save "" --appendonly no --maxclients 20000
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
     ports:
       - "6379:6379"
     networks:
