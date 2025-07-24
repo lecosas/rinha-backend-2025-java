@@ -1,13 +1,9 @@
 package io.backendscience.rinha_backend_2025_java.adapter.outbound;
 
-import io.backendscience.rinha_backend_2025_java.application.port.outbound.PaymentRepositoryPort;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
-import io.lettuce.core.Range;
 import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +18,7 @@ public class HealthCheckRedisRepository {
         else if (status.equalsIgnoreCase(PaymentProcessorType.FALLBACK.toString()))
             return PaymentProcessorType.FALLBACK;
         else
-            return PaymentProcessorType.NONE;
+            return PaymentProcessorType.STOPPED;
     }
 
     public void setHeathCheckStatus(PaymentProcessorType type) {

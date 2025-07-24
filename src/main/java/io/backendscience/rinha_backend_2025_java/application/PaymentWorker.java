@@ -3,7 +3,6 @@ package io.backendscience.rinha_backend_2025_java.application;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.api.sync.RedisCommands;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +23,7 @@ public class PaymentWorker {
     private final RedisCommands<String, String> redis;
     private final HealthCheckEngine healthCheckEngine;
     private boolean isWorking;
+    String PROCESSING_COUNTER_KEY = "payment-processing:counter";
 
     public void work() {
         isWorking = true;
@@ -31,33 +31,53 @@ public class PaymentWorker {
             executorService.submit(() -> {
                 while (true) {
                     try {
+
+                        while (true) {
+                            String workerPause = redis.get("worker:pause");
+
+                            if (!workerPause.equals("true"))
+                                break;
+
+                            try {
+                                logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
+                                Thread.sleep(100); // small backoff
+                            } catch (InterruptedException e) {
+                                throw new RuntimeException(e);
+                            }
+                        };
+
+                        logger.info("WORKER: free.");
+
                         PaymentDetail payment = workerQueue.take();
 
                         PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
 
-                        if (paymentType == PaymentProcessorType.NONE) {
-                            logger.severe("WORKER PARADOOOOOOO: ");
+                        if (paymentType == PaymentProcessorType.STOPPED) {
+                            logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
                             Thread.sleep(500);
                             workerQueue.add(payment);
                             continue;
                         } else if (paymentType == PaymentProcessorType.FALLBACK) {
-                            Thread.sleep(200);
+                            //Thread.sleep(200);
                         }
 
-                        logger.info("WORKER NOVO: " + payment);
+                        logger.info("WORKER: is going to execute.");
 
 
                         executorService.execute(() -> {
                             try {
+                                redis.incr(PROCESSING_COUNTER_KEY);
                                 savePaymentUC.execute(payment, paymentType);
                             } catch (Exception e) {
                                 try {
-                                    healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
+                                    healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.STOPPED);
                                     Thread.sleep(500);
                                 } catch (InterruptedException ex) {
                                     throw new RuntimeException(ex);
                                 }
                                 workerQueue.add(payment);
+                            } finally {
+                                redis.decr(PROCESSING_COUNTER_KEY);
                             }
                         });
 

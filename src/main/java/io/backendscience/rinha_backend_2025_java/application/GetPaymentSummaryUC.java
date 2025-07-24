@@ -31,18 +31,56 @@ public class GetPaymentSummaryUC {
         long fromTimestamp = from != null ? from.toInstant().toEpochMilli() : 0L;
         long toTimestamp = to != null ? to.toInstant().toEpochMilli() : Long.MAX_VALUE;
 
-//        redis.set("pause:queue", "true");
-//
-//        try {
-//            Thread.sleep(1_000);
-//        } catch (InterruptedException e) {
-//            throw new RuntimeException(e);
-//        }
+        logger.info("GET_SUMMARY: locking worker");
+
+        redis.set("worker:pause", "true");
+
+        String PROCESSING_COUNTER_KEY = "payment-processing:counter";
+        String counterStr = "";
+
+        int i = 1;
+
+        // Wait until counter is zero
+        while (i <= 16) {
+            i++;
+
+            counterStr = redis.get(PROCESSING_COUNTER_KEY);
+            long count = counterStr != null ? Long.parseLong(counterStr) : 0;
+
+            logger.info(String.format("GET_SUMMARY: waiting (queue size: %s)", counterStr));
+
+            if (count == 0) {
+                break; // Safe to proceed with getSummary
+            }
+
+
+            // Optional: add timeout or logging here
+            try {
+                Thread.sleep(50); // small backoff
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        if (i == 16) {
+            logger.info(String.format("GET_SUMMARY: the queue is not empty. (queue size: %s)", counterStr));
+        }
+
+        logger.info("GET_SUMMARY: queue empty.");
+
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         countDefault = paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp);
         countFallback = paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp);
 
-//        redis.set("pause:queue", "false");
+        redis.set("worker:pause", "false");
+
+        logger.info("GET_SUMMARY: unlocked worker");
 
         map.put(
                 PaymentProcessorType.DEFAULT,

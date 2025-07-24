@@ -6,5 +6,5 @@ import lombok.Getter;
 public enum PaymentProcessorType {
     DEFAULT,
     FALLBACK,
-    NONE
+    STOPPED
 }

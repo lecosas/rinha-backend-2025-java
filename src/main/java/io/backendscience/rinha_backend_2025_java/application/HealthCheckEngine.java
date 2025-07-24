@@ -12,7 +12,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 @Component
@@ -76,7 +75,7 @@ public class HealthCheckEngine {
             logger.info("Fallback Health Checks retrieved: " + healthStatusFallback);
 
             if (healthStatusDefault.failing() && healthStatusFallback.failing()) {
-                setHeathCheckStatus(PaymentProcessorType.NONE);
+                setHeathCheckStatus(PaymentProcessorType.STOPPED);
             } else if (healthStatusDefault.failing()
                     && !healthStatusFallback.failing()
                     && healthStatusFallback.minResponseTime() <= 1_000) {
@@ -84,7 +83,7 @@ public class HealthCheckEngine {
             } else if (!healthStatusDefault.failing()) {
                 setHeathCheckStatus(PaymentProcessorType.DEFAULT);
             } else {
-                setHeathCheckStatus(PaymentProcessorType.NONE);
+                setHeathCheckStatus(PaymentProcessorType.STOPPED);
             }
 
         } catch (InterruptedException e) {

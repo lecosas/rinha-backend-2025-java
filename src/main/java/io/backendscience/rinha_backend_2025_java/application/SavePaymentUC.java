@@ -18,6 +18,7 @@ public class SavePaymentUC {
     private final Logger logger = Logger.getLogger(SavePaymentUC.class.getName());
     private final RedisCommands<String, String> redis;
     private final HealthCheckEngine healthCheckEngine;
+    //private String PROCESSING_COUNTER_KEY = "payment-processing:counter";
 
     public void execute(PaymentDetail paymentDetail, PaymentProcessorType sendTo) {
 
@@ -36,8 +37,12 @@ public class SavePaymentUC {
 
         startTime = System.nanoTime();
 
+        //redis.incr(PROCESSING_COUNTER_KEY);
+
         redis.zadd(
                 sendTo.toString(), requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
+
+        //redis.decr(PROCESSING_COUNTER_KEY);
 
         logger.info(String.format("Time to save in the Redis: %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
     }
