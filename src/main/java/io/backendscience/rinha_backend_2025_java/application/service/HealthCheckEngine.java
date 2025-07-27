@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class HealthCheckEngine {
 
-    @Value("${payment-backend.isMainInstance}")
+    @Value("${payment-backend.main-instance}")
     private Boolean isMainInstance;
 
     private final Logger logger = Logger.getLogger(HealthCheckEngine.class.getName());

@@ -19,10 +19,10 @@ import java.util.logging.Logger;
 @Configuration
 public class RestClientConfig {
 
-    @Value("${payment-processor.defaultUrl}")
+    @Value("${payment-processor.default-url}")
     private String paymentProcessorDefaultUrl;
 
-    @Value("${payment-processor.fallbackUrl}")
+    @Value("${payment-processor.fallback-url}")
     private String paymentProcessorFallbackUrl;
 
     @Value("${httpclient.connection-timeout:5000}")
