@@ -1,6 +1,6 @@
 package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.out.PaymentProcessorGateway;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class WarmupService implements CommandLineRunner {
 
-    private final PaymentProcessorGateway paymentPort;
+    private final PaymentProcessorGateway paymentProcessor;
     private final Logger logger = Logger.getLogger(WarmupService.class.getName());
     private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
@@ -41,21 +41,18 @@ public class WarmupService implements CommandLineRunner {
     private void paymentProcessorWarmup() {
         logger.info("Starting PaymentProcessor warmup");
 
-        PaymentDetail paymentDetail =
-                new PaymentDetail("INVALID", BigDecimal.ZERO);
+        PaymentDetail paymentDetail = new PaymentDetail("INVALID", BigDecimal.ZERO);
 
         try {
-            paymentPort.savePaymentDefault(paymentDetail, OffsetDateTime.now(ZoneOffset.UTC)
-                    .truncatedTo(ChronoUnit.MILLIS));
-            paymentPort.savePaymentFallback(paymentDetail, OffsetDateTime.now(ZoneOffset.UTC)
-                    .truncatedTo(ChronoUnit.MILLIS));
+            paymentProcessor.sendPaymentToDefault(
+                    paymentDetail, OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS));
         } catch (Exception ex) {
 
         }
 
         try {
-            paymentPort.savePaymentFallback(paymentDetail, OffsetDateTime.now(ZoneOffset.UTC)
-                    .truncatedTo(ChronoUnit.MILLIS));
+            paymentProcessor.sendPaymentToFallback(
+                    paymentDetail, OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS));
         } catch (Exception ex) {
 
         }

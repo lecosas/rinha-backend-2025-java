@@ -1,9 +1,8 @@
 package io.backendscience.rinha_backend_2025_java.adapter.in.rest;
 
 import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
+import io.backendscience.rinha_backend_2025_java.application.port.in.EnqueuePaymentUseCase;
 import io.backendscience.rinha_backend_2025_java.application.port.in.PurgePaymentsUseCase;
-import io.backendscience.rinha_backend_2025_java.application.service.HealthCheckEngine;
-import io.backendscience.rinha_backend_2025_java.application.service.PaymentWorker;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
 import lombok.RequiredArgsConstructor;
@@ -22,37 +21,24 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class PaymentsController {
 
+    private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
+
     private final GetPaymentSummaryUseCase getPaymentSummaryUC;
     private final PurgePaymentsUseCase purgePaymentsUC;
-    private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
-    private final PaymentWorker paymentWorker;
-    private final HealthCheckEngine healthCheckEngine;
+    private final EnqueuePaymentUseCase enqueuePaymentUC;
 
     @PostMapping("/payments")
     public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
+        logger.info("START: Controller postPaymentsController.");
+
         long startTime = System.nanoTime();
-
-        getPaymentSummaryUC.setFixedAmount(paymentBody.amount);
-
-        if (!healthCheckEngine.isExecuting()) {
-            healthCheckEngine.startExecuting();
-            try {
-                Thread.sleep(80);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        if (!paymentWorker.isWorking()) paymentWorker.work();
 
         PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
 
-        paymentWorker.workerQueue.add(paymentDetail);
+        enqueuePaymentUC.execute(paymentDetail);
 
         logger.info(String.format(
-                "FIM Controller POST_PAYMENT: %s takes %.3f",
-                paymentBody, (System.nanoTime() - startTime) / 1_000_000.0));
-        // return ResponseEntity.accepted().build();
+                "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
     @GetMapping("/payments-summary")
@@ -74,9 +60,15 @@ public class PaymentsController {
     }
 
     @PostMapping("/purge-payments")
-    public ResponseEntity<String> postPurgePaymentsController() {
+    public void postPurgePaymentsController() {
+        logger.info("START: Controller postPurgePaymentsController.");
+
+        long startTime = System.nanoTime();
+
         purgePaymentsUC.execute();
-        return ResponseEntity.ok().build();
+
+        logger.info(String.format(
+                "END: Controller postPurgePaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
     public record PaymentBody(String correlationId, BigDecimal amount) {}

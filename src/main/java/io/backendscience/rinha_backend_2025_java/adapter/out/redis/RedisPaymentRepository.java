@@ -30,6 +30,16 @@ public class RedisPaymentRepository implements PaymentRepository {
         redis.del(PaymentProcessorType.DEFAULT.toString(), PaymentProcessorType.FALLBACK.toString());
     }
 
+    @Override
+    public void savePaymentDefault(long timestamp, String correlationId) {
+        redis.zadd(PaymentProcessorType.DEFAULT.toString(), timestamp, correlationId);
+    }
+
+    @Override
+    public void savePaymentFallback(long timestamp, String correlationId) {
+        redis.zadd(PaymentProcessorType.FALLBACK.toString(), timestamp, correlationId);
+    }
+
     private long countPayment(PaymentProcessorType type, long from, long to) {
         return Optional.ofNullable(redis.zcount(
                 type.toString(),

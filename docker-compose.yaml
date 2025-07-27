@@ -32,11 +32,12 @@ services:
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
-      - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=400
-      - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=400
+      - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=1000
+      - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=1000
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - REDIS_HOST=redis
@@ -44,12 +45,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-#    healthcheck:
-#      test: "curl -f -s http://localhost:8080/actuator/health | grep UP || exit 1"
-#      interval: 5s
-#      timeout: 10s
-#      retries: 3
-#      start_period: 5s
     deploy:
       resources:
         limits:
@@ -63,12 +58,13 @@ services:
     container_name: backend-02
     hostname: backend-02
     environment:
-      - HEALTH_CHECK_ENGINE=false
+      - PAYMENT_BACKEND_MAIN_INSTANCE=false
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
-      - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=400
-      - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=400
+      - HTTPCLIENT_MAX_TOTAL_CONNECTIONS=1000
+      - HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS=1000
       - PAYMENT_PROCESSOR_DEFAULT_URL=http://payment-processor-default:8080
       - PAYMENT_PROCESSOR_FALLBACK_URL=http://payment-processor-fallback:8080
       - REDIS_HOST=redis
@@ -76,10 +72,8 @@ services:
 
   redis:
     image: redis:7-alpine
-#    image: redis:8.0.3-alpine3.21
     container_name: redis
-#    command: ["redis-server", "--save", "", "--appendonly", "no"]
-    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru --save "" --tcp-keepalive 60 --timeout 0
+    command: redis-server --save "" --appendonly no --maxmemory 20Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
     ports:
       - "6379:6379"
     networks:
@@ -89,12 +83,11 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-#      start_period: 5s
     deploy:
       resources:
         limits:
           cpus: "0.2"
-          memory: "20MB"
+          memory: "20MB" #Change in command line too.
 
 networks:
   backend:

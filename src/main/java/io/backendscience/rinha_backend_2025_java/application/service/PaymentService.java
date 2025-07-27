@@ -1,9 +1,10 @@
 package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.out.PaymentProcessorGateway;
+import io.backendscience.rinha_backend_2025_java.adapter.out.http.PaymentProcessorClient;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
-import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,23 +15,22 @@ import java.util.logging.Logger;
 
 @Component
 @RequiredArgsConstructor
-public class SavePaymentUC {
+public class PaymentService {
 
-    private final PaymentProcessorGateway paymentPort;
-    private final Logger logger = Logger.getLogger(SavePaymentUC.class.getName());
-    private final RedisCommands<String, String> redis;
+    private final PaymentProcessorGateway paymentProcessor;
+    private final Logger logger = Logger.getLogger(PaymentService.class.getName());
     private final SemaphoreService semaphoreService;
+    private final PaymentRepository paymentRepository;
 
-    public void execute(PaymentDetail paymentDetail, PaymentProcessorType sendTo) {
+    public void process(PaymentDetail paymentDetail, PaymentProcessorType sendTo) {
         OffsetDateTime requestedAt = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS);
-        ;
 
         long startTime = System.nanoTime();
 
         if (sendTo == PaymentProcessorType.DEFAULT) {
-            paymentPort.savePaymentDefault(paymentDetail, requestedAt);
+            paymentProcessor.sendPaymentToDefault(paymentDetail, requestedAt);
         } else {
-            paymentPort.savePaymentFallback(paymentDetail, requestedAt);
+            paymentProcessor.sendPaymentToFallback(paymentDetail, requestedAt);
         }
 
         logger.info(String.format(
@@ -39,9 +39,16 @@ public class SavePaymentUC {
         startTime = System.nanoTime();
 
         semaphoreService.incrementLocalSavingCounter();
-        redis.zadd(sendTo.toString(), requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
+
+        if (sendTo == PaymentProcessorType.DEFAULT) {
+            paymentRepository.savePaymentDefault(requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
+        } else {
+            paymentRepository.savePaymentFallback(requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
+        }
+
         semaphoreService.decrementLocalSavingCounter();
 
         logger.info(String.format("Time to save in the Redis: %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
     }
+
 }

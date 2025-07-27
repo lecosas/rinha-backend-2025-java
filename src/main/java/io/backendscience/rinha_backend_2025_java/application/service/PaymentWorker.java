@@ -2,8 +2,8 @@ package io.backendscience.rinha_backend_2025_java.application.service;
 
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
-import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.BlockingQueue;
@@ -17,9 +17,12 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class PaymentWorker {
 
-    public final BlockingQueue<PaymentDetail> workerQueue = new LinkedBlockingQueue<>();
+    @Value("${payment-backend.worker.fallback-delay}")
+    private long fallbackDelay;
+
+    private final BlockingQueue<PaymentDetail> workerQueue = new LinkedBlockingQueue<>();
     private final Logger logger = Logger.getLogger(PaymentWorker.class.getName());
-    private final SavePaymentUC savePaymentUC;
+    private final PaymentService paymentService;
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
     private final HealthCheckEngine healthCheckEngine;
     private final AtomicBoolean isWorking = new AtomicBoolean(false);
@@ -27,59 +30,57 @@ public class PaymentWorker {
 
     public void work() {
         isWorking.set(true);
-        //for (int i = 1; i <= 4; i++) {
-            executorService.submit(() -> {
-                while (true) {
-                    if (semaphoreService.isWorkerPaused()) {
-                        logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
-                        Thread.sleep(100); // small backoff
-                        continue;
-                    }
-
-                    logger.info("WORKER: free.");
-
-//                    PaymentDetail payment = workerQueue.take();
-
-                    PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
-
-                    if (paymentType == PaymentProcessorType.NONE) {
-                        logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
-                        Thread.sleep(500);
-//                        workerQueue.add(payment);
-                        continue;
-                    } else if (paymentType == PaymentProcessorType.FALLBACK) {
-                        Thread.sleep(50);
-                    }
-
-                    PaymentDetail payment = workerQueue.take();
-
-                    logger.info("WORKER: is going to execute.");
-
-
-                    executorService.execute(() -> {
-                        try {
-//                            redis.incr(PROCESSING_COUNTER_KEY);
-                            savePaymentUC.execute(payment, paymentType);
-                        } catch (Exception e) {
-                            logger.severe("Entrou no exception: " + e.getMessage());
-                            try {
-                                healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
-                                Thread.sleep(500);
-                            } catch (InterruptedException ex) {
-                                throw new RuntimeException(ex);
-                            }
-                            workerQueue.add(payment);
-                        } finally {
-//                            redis.decr(PROCESSING_COUNTER_KEY);
-                        }
-                    });
-
+        // for (int i = 1; i <= 4; i++) {
+        executorService.submit(() -> {
+            while (true) {
+                if (semaphoreService.isWorkerPaused()) {
+                    logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
+                    pauseFor(100);
+                    continue;
                 }
-            });
-        //}
+
+                PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
+
+                if (paymentType == PaymentProcessorType.NONE) {
+                    logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
+                    pauseFor(500);
+                    continue;
+                } else if (paymentType == PaymentProcessorType.FALLBACK) {
+                    pauseFor(fallbackDelay);
+                }
+
+                PaymentDetail payment = workerQueue.take();
+
+                logger.info("WORKER: is going to execute.");
+
+                executorService.execute(() -> {
+                    try {
+                        paymentService.process(payment, paymentType);
+                    } catch (Exception e) {
+                        healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
+                        pauseFor(500);
+                        workerQueue.add(payment);
+                    }
+                });
+            }
+        });
+        // }
+    }
+
+    private void pauseFor(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void addToQueue(PaymentDetail paymentDetail) {
+        workerQueue.add(paymentDetail);
     }
 
     public boolean isWorking() {
         return isWorking.get();
     }
+
 }

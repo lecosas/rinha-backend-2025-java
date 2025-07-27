@@ -1,6 +1,7 @@
-package io.backendscience.rinha_backend_2025_java.adapter.out;
+package io.backendscience.rinha_backend_2025_java.adapter.out.http;
 
 import io.backendscience.rinha_backend_2025_java.adapter.out.resources.PaymentDetailToSend;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,11 +14,11 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
-@Service
+//@Service
 @RequiredArgsConstructor
-public class PaymentProcessorGateway {
+public class PaymentProcessorClient implements PaymentProcessorGateway {
 
-    private final Logger logger = Logger.getLogger(PaymentProcessorGateway.class.getName());
+    private final Logger logger = Logger.getLogger(PaymentProcessorClient.class.getName());
 
     @Qualifier("restClientDefault")
     private final RestClient restClientDefault;
@@ -25,7 +26,7 @@ public class PaymentProcessorGateway {
     @Qualifier("restClientFallback")
     private final RestClient restClientFallback;
 
-    public void savePaymentDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
+    public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
 
         PaymentDetailToSend payOut = new PaymentDetailToSend(
                 paymentDetail.correlationId(),
@@ -66,7 +67,7 @@ public class PaymentProcessorGateway {
         }
     }
 
-    public void savePaymentFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
+    public void sendPaymentToFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
 
         PaymentDetailToSend payOut = new PaymentDetailToSend(
                 paymentDetail.correlationId(),
