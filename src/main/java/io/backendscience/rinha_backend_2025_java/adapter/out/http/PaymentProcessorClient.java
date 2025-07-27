@@ -1,13 +1,11 @@
 package io.backendscience.rinha_backend_2025_java.adapter.out.http;
 
-import io.backendscience.rinha_backend_2025_java.adapter.out.resources.PaymentDetailToSend;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.time.OffsetDateTime;
@@ -27,12 +25,6 @@ public class PaymentProcessorClient implements PaymentProcessorGateway {
     private final RestClient restClientFallback;
 
     public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-
-        PaymentDetailToSend payOut = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
-
         String payToSend = new StringBuilder("{")
                 .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
                 .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
@@ -68,12 +60,6 @@ public class PaymentProcessorClient implements PaymentProcessorGateway {
     }
 
     public void sendPaymentToFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-
-        PaymentDetailToSend payOut = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
-
         String payToSend = new StringBuilder("{")
                 .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
                 .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")

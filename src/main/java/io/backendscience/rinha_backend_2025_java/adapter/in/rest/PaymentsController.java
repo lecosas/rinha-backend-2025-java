@@ -31,6 +31,7 @@ public class PaymentsController {
     public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
         logger.info("START: Controller postPaymentsController.");
 
+        System.out.println("Virtual Threads: " + Thread.currentThread().isVirtual());
         long startTime = System.nanoTime();
 
         PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);

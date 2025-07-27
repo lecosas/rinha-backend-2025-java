@@ -1,6 +1,5 @@
 package io.backendscience.rinha_backend_2025_java.adapter.out.http;
 
-import io.backendscience.rinha_backend_2025_java.adapter.out.resources.PaymentDetailToSend;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
@@ -28,71 +27,59 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
     private final WebClient webClientFallback;
 
     public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
+        String payToSend = new StringBuilder("{")
+                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
+                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
+                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
+                .append("}")
+                .toString();
 
-        PaymentDetailToSend payOut = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
-
-//        String payToSend = new StringBuilder("{")
-//                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-//                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-//                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-//                .append("}")
-//                .toString();
-
-        ResponseEntity<Void> retorno = webClientDefault
+        ResponseEntity<Void> defaultResponse = webClientDefault
                 .post()
                 .uri("/payments")
-                .bodyValue(payOut)
+                .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.severe("Error %s to send DEFAULT payment." + clientResponse.statusCode());
+                    logger.severe(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
-                    logger.severe("Error %s to send DEFAULT payment." + clientResponse.statusCode());
+                    logger.severe(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .toBodilessEntity()
                 .block();
 
-        if (!retorno.getStatusCode().is2xxSuccessful()) {
+        if (!defaultResponse.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error sending the payment to the FALLBACK");
         }
     }
 
     public void sendPaymentToFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
+        String payToSend = new StringBuilder("{")
+                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
+                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
+                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
+                .append("}")
+                .toString();
 
-        PaymentDetailToSend payOut = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
-
-//        String payToSend = new StringBuilder("{")
-//                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-//                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-//                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-//                .append("}")
-//                .toString();
-
-        ResponseEntity<Void> retorno2 = webClientFallback
+        ResponseEntity<Void> fallbackResponse = webClientFallback
                 .post()
                 .uri("/payments")
-                .bodyValue(payOut)
+                .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.severe("Error %s to send FALLBACK payment." + clientResponse.statusCode());
+                    logger.severe(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
-                    logger.severe("Error %s to send FALLBACK payment." + clientResponse.statusCode());
+                    logger.severe(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .toBodilessEntity()
                 .block();
 
-        if (!retorno2.getStatusCode().is2xxSuccessful()) {
+        if (!fallbackResponse.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error sending the payment to the FALLBACK");
         }
     }

@@ -40,39 +40,18 @@ public class WebClientConfig {
     @Value("${httpclient.max-per-route-connections}")
     private int maxPerRouteConnections;
 
+    @Value("${httpclient.max-idle-time}")
+    private int maxIdleTime;
+
+    @Value("${httpclient.max-life-time}")
+    private int maxLifeTime;
+
     private final Logger logger = Logger.getLogger(WebClientConfig.class.getName());
 
     @Bean("webClientDefault")
     public WebClient webClientDefault() {
-        logger.info(String.format(
-                "Configuring WebClient properties: connectionTimeout: %s | readTimeout: %s | socketTimeout: %s | maxTotalConnections: %s | maxPerRouteConnections: %s.",
-                connectionTimeout, readTimeout, socketTimeout, maxTotalConnections, maxPerRouteConnections));
-
-        ConnectionProvider provider = ConnectionProvider.builder("ybs-pool")
-                .maxConnections(maxTotalConnections)
-                .pendingAcquireTimeout(Duration.ofMillis(0))
-                .pendingAcquireMaxCount(-1)
-                .maxIdleTime(Duration.ofMillis(8000L))
-                .maxLifeTime(Duration.ofMillis(8000L))
-                .build();
-
-        //        ConnectionProvider provider = ConnectionProvider.builder("custom")
-        //            .maxConnections(maxTotalConnections)  // Match maxTotalConnections
-        //            .pendingAcquireTimeout(Duration.ofMillis(connectionTimeout))  // Match connectionTimeout
-        //            .maxIdleTime(Duration.ofSeconds(30))  // Adjusted for better reuse
-        //            .maxLifeTime(Duration.ofMinutes(5))  // Similar to traditional pools
-        //            .evictInBackground(Duration.ofSeconds(30))  // Clean idle connections periodically
-        //            .build();
-
-        HttpClient httpClient = HttpClient.create(provider)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout) // Match connectionTimeout
-                .responseTimeout(Duration.ofMillis(socketTimeout)) // Match socketTimeout
-                .doOnConnected(
-                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(readTimeout / 1000)) // Convert ms to s
-                                .addHandlerLast(new WriteTimeoutHandler(readTimeout / 1000))); // Convert ms to s
-
         return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
                 .baseUrl(paymentProcessorDefaultUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
@@ -80,37 +59,31 @@ public class WebClientConfig {
 
     @Bean("webClientFallback")
     public WebClient webClientFallback() {
+        return WebClient.builder()
+                .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
+                .baseUrl(paymentProcessorFallbackUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build();
+    }
+
+    private HttpClient buildHttpClient() {
         logger.info(String.format(
                 "Configuring WebClient properties: connectionTimeout: %s | readTimeout: %s | socketTimeout: %s | maxTotalConnections: %s | maxPerRouteConnections: %s.",
                 connectionTimeout, readTimeout, socketTimeout, maxTotalConnections, maxPerRouteConnections));
 
-        ConnectionProvider provider = ConnectionProvider.builder("ybs-pool")
+        ConnectionProvider provider = ConnectionProvider.builder("connection-pool")
                 .maxConnections(maxTotalConnections)
                 .pendingAcquireTimeout(Duration.ofMillis(0))
                 .pendingAcquireMaxCount(-1)
-                .maxIdleTime(Duration.ofMillis(8000L))
-                .maxLifeTime(Duration.ofMillis(8000L))
+                .maxIdleTime(Duration.ofMillis(maxIdleTime))
+                .maxLifeTime(Duration.ofMillis(maxLifeTime))
                 .build();
 
-        //        ConnectionProvider provider = ConnectionProvider.builder("custom")
-        //            .maxConnections(maxTotalConnections)  // Match maxTotalConnections
-        //            .pendingAcquireTimeout(Duration.ofMillis(connectionTimeout))  // Match connectionTimeout
-        //            .maxIdleTime(Duration.ofSeconds(30))  // Adjusted for better reuse
-        //            .maxLifeTime(Duration.ofMinutes(5))  // Similar to traditional pools
-        //            .evictInBackground(Duration.ofSeconds(30))  // Clean idle connections periodically
-        //            .build();
-
-        HttpClient httpClient = HttpClient.create(provider)
-                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout) // Match connectionTimeout
-                .responseTimeout(Duration.ofMillis(socketTimeout)) // Match socketTimeout
+        return HttpClient.create(provider)
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
+                .responseTimeout(Duration.ofMillis(socketTimeout))
                 .doOnConnected(
-                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(readTimeout / 1000)) // Convert ms to s
-                                .addHandlerLast(new WriteTimeoutHandler(readTimeout / 1000))); // Convert ms to s
-
-        return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient))
-                .baseUrl(paymentProcessorFallbackUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
+                        conn -> conn.addHandlerLast(new ReadTimeoutHandler(readTimeout / 1_000)) // Convert ms to s
+                                .addHandlerLast(new WriteTimeoutHandler(readTimeout / 1_000))); // Convert ms to s
     }
 }

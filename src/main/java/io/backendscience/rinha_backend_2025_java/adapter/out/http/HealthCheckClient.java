@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.logging.Logger;
 
@@ -17,37 +19,40 @@ public class HealthCheckClient implements HealthCheckGateway {
 
     private final Logger logger = Logger.getLogger(HealthCheckClient.class.getName());
 
-    @Qualifier("restClientDefault")
-    private final RestClient restClientDefault;
+    @Qualifier("webClientDefault")
+    private final WebClient webClientDefault;
 
-    @Qualifier("restClientFallback")
-    private final RestClient restClientFallback;
+    @Qualifier("webClientFallback")
+    private final WebClient webClientFallback;
 
     private final String HEALTH_CHECK_ENDPOINT = "/payments/service-health";
 
     public HealthCheckStatus getHeathCheckDefault() {
-        return getHealthCheck(restClientDefault);
+        return getHealthCheck(webClientDefault);
     }
 
     public HealthCheckStatus getHeathCheckFallback() {
-        return getHealthCheck(restClientFallback);
+        return getHealthCheck(webClientFallback);
     }
 
-    private HealthCheckStatus getHealthCheck(RestClient restClient) {
-        ResponseEntity<HealthCheckStatus> retorno = restClient
+    private HealthCheckStatus getHealthCheck(WebClient webClient) {
+        ResponseEntity<HealthCheckStatus> healthCheckStatusResponse = webClient
                 .get()
                 .uri(HEALTH_CHECK_ENDPOINT)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    logger.severe("Error %s to get health check status." + res.getStatusCode());
+                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
+                    return Mono.empty();
                 })
-                .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                    logger.severe("Error %s to get health check status." + res.getStatusCode());
+                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
+                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
+                    return Mono.empty();
                 })
-                .toEntity(HealthCheckStatus.class);
+                .toEntity(HealthCheckStatus.class)
+                .block();
 
-        if (retorno.getStatusCode().is2xxSuccessful()) {
-            return retorno.getBody();
+        if (healthCheckStatusResponse.getStatusCode().is2xxSuccessful()) {
+            return healthCheckStatusResponse.getBody();
         }
 
         throw new RuntimeException("Error to get health check status.");
