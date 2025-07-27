@@ -11,13 +11,10 @@ import java.time.OffsetDateTime;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.logging.Logger;
 
 @Component
 @RequiredArgsConstructor
 public class PaymentSummaryService implements GetPaymentSummaryUseCase {
-
-    private final Logger logger = Logger.getLogger(PaymentSummaryService.class.getName());
     private final PaymentRepository paymentRepository;
     private final SemaphoreService semaphoreService;
 
@@ -31,19 +28,11 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
         semaphoreService.pauseWorker();
 
         pauseFor(20);
-
-        int i = 1;
-
-        while (semaphoreService.isSavingLocalData() && i <= 100) {
-            i++;
-            pauseFor(10);
-        }
-
+        waitToSaveLocalData();
         pauseFor(20);
 
         CompletableFuture<Long> taskCountDefault = CompletableFuture.supplyAsync(
                 () -> paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp), executor);
-
         CompletableFuture<Long> taskCountFallback = CompletableFuture.supplyAsync(
                 () -> paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp), executor);
 
@@ -58,10 +47,7 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
         }
 
         pauseFor(10);
-
         semaphoreService.resumeWorker();
-
-        logger.info("GET_SUMMARY: unlocked worker");
 
         return new PaymentSummary(
                 new PaymentSummary.PaymentSummaryDetail(
@@ -75,6 +61,14 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
         this.fixedAmount = fixedAmount;
     }
 
+    private void waitToSaveLocalData() {
+        int i = 1;
+        while (semaphoreService.isSavingLocalData() && i <= 100) {
+            i++;
+            pauseFor(10);
+        }
+    }
+
     private void pauseFor(long milliseconds) {
         try {
             Thread.sleep(milliseconds);
@@ -82,5 +76,4 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
             throw new RuntimeException(e);
         }
     }
-
 }

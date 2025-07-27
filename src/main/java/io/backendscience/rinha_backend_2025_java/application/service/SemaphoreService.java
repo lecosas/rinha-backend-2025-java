@@ -16,11 +16,15 @@ public class SemaphoreService {
     private final String WORKER_STATUS_WORKING = "working";
 
     public void pauseWorker() {
+        logger.info("Setting Payment Worker to paused.");
         semaphoreRepository.setWorkerStatus(WORKER_STATUS_PAUSED);
+        logger.info("Payment Worker set to paused.");
     }
 
     public void resumeWorker() {
+        logger.info("Setting Payment Worker to working.");
         semaphoreRepository.setWorkerStatus(WORKER_STATUS_WORKING);
+        logger.info("Payment Worker set to working.");
     }
 
     public boolean isWorkerPaused() {
