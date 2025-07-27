@@ -25,19 +25,19 @@ public class WebClientConfig {
     @Value("${payment-processor.fallback-url}")
     private String paymentProcessorFallbackUrl;
 
-    @Value("${httpclient.connection-timeout:5000}")
+    @Value("${httpclient.connection-timeout}")
     private int connectionTimeout;
 
-    @Value("${httpclient.read-timeout:10000}")
+    @Value("${httpclient.read-timeout}")
     private int readTimeout;
 
-    @Value("${httpclient.socket-timeout:10000}")
+    @Value("${httpclient.socket-timeout}")
     private int socketTimeout;
 
-    @Value("${httpclient.max-total-connections:400}")
+    @Value("${httpclient.max-total-connections}")
     private int maxTotalConnections;
 
-    @Value("${httpclient.max-per-route-connections:400}")
+    @Value("${httpclient.max-per-route-connections}")
     private int maxPerRouteConnections;
 
     private final Logger logger = Logger.getLogger(WebClientConfig.class.getName());

@@ -25,19 +25,19 @@ public class RestClientConfig {
     @Value("${payment-processor.fallback-url}")
     private String paymentProcessorFallbackUrl;
 
-    @Value("${httpclient.connection-timeout:5000}")
+    @Value("${httpclient.connection-timeout}")
     private int connectionTimeout;
 
-    @Value("${httpclient.read-timeout:10000}")
+    @Value("${httpclient.read-timeout}")
     private int readTimeout;
 
-    @Value("${httpclient.socket-timeout:10000}")
+    @Value("${httpclient.socket-timeout}")
     private int socketTimeout;
 
-    @Value("${httpclient.max-total-connections:400}")
+    @Value("${httpclient.max-total-connections}")
     private int maxTotalConnections;
 
-    @Value("${httpclient.max-per-route-connections:400}")
+    @Value("${httpclient.max-per-route-connections}")
     private int maxPerRouteConnections;
 
     private final Logger logger = Logger.getLogger(RestClientConfig.class.getName());
@@ -56,7 +56,7 @@ public class RestClientConfig {
         return RestClient.builder()
                 .baseUrl(paymentProcessorFallbackUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                // .requestFactory(this.clientHttpRequestFactory())
+                .requestFactory(this.clientHttpRequestFactory())
                 .build();
     }
 
@@ -70,7 +70,6 @@ public class RestClientConfig {
         poolingConnManager.setDefaultMaxPerRoute(maxPerRouteConnections);
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
                 .setResponseTimeout(Timeout.ofMilliseconds(socketTimeout))
                 .build();
 
