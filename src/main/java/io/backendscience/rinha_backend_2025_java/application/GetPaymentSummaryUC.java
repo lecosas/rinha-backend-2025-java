@@ -1,6 +1,7 @@
 package io.backendscience.rinha_backend_2025_java.application;
 
 import io.backendscience.rinha_backend_2025_java.application.port.outbound.PaymentRepositoryPort;
+import io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummaryTotal;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -11,6 +12,9 @@ import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @Component
@@ -20,6 +24,7 @@ public class GetPaymentSummaryUC {
     private final Logger logger = Logger.getLogger(GetPaymentSummaryUC.class.getName());
     private final PaymentRepositoryPort paymentRepository;
     private final RedisCommands<String, String> redis;
+    private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public Map<PaymentProcessorType, PaymentSummaryTotal> execute(
             OffsetDateTime from, OffsetDateTime to, BigDecimal fixedAmount) {
@@ -35,13 +40,19 @@ public class GetPaymentSummaryUC {
 
         redis.set("worker:pause", "true");
 
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
         String PROCESSING_COUNTER_KEY = "payment-processing:counter";
         String counterStr = "";
 
         int i = 1;
 
         // Wait until counter is zero
-        while (i <= 16) {
+        while (i <= 10) {
             i++;
 
             counterStr = redis.get(PROCESSING_COUNTER_KEY);
@@ -62,12 +73,11 @@ public class GetPaymentSummaryUC {
             }
         }
 
-        if (i == 16) {
-            logger.info(String.format("GET_SUMMARY: the queue is not empty. (queue size: %s)", counterStr));
+        if (i == 10) {
+            logger.severe(String.format("GET_SUMMARY: the queue is not empty. (queue size: %s)", counterStr));
+        } else {
+            logger.info("GET_SUMMARY: queue empty.");
         }
-
-        logger.info("GET_SUMMARY: queue empty.");
-
 
         try {
             Thread.sleep(200);
@@ -75,8 +85,28 @@ public class GetPaymentSummaryUC {
             throw new RuntimeException(e);
         }
 
-        countDefault = paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp);
-        countFallback = paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp);
+        CompletableFuture<Long> taskCountDefault = CompletableFuture.supplyAsync(
+                () -> paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp), executor);
+
+        CompletableFuture<Long> taskCountFallback = CompletableFuture.supplyAsync(
+                () -> paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp), executor);
+
+        try {
+            countDefault = taskCountDefault.get();
+            countFallback = taskCountFallback.get();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        //        countDefault = paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp);
+        //        countFallback = paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp);
+
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
 
         redis.set("worker:pause", "false");
 

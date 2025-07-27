@@ -36,7 +36,7 @@ public class PaymentsController {
     private BigDecimal fixedAmount = BigDecimal.ZERO;
 
     @PostMapping("/payments")
-    public ResponseEntity<String> postPaymentsController(@RequestBody PaymentBody paymentBody) {
+    public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
         long startTime = System.nanoTime();
 
         fixedAmount = paymentBody.amount;
@@ -56,9 +56,8 @@ public class PaymentsController {
 
         paymentWorker.workerQueue.add(paymentDetail);
 
-        logger.info("FIM Controller POST_PAYMENT:  " + paymentBody );
-        logger.info(String.format("FIM Controller POST_PAYMENT: takes %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
-        return ResponseEntity.accepted().build();
+        logger.info(String.format("FIM Controller POST_PAYMENT: %s takes %.3f", paymentBody, (System.nanoTime() - startTime) / 1_000_000.0));
+        //return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/payments-summary")
@@ -68,7 +67,7 @@ public class PaymentsController {
 
         long startTime = System.nanoTime();
 
-        logger.severe(String.format("QUEUE SIZE v2: %s", paymentWorker.workerQueue.size()));
+        logger.severe(String.format("queue size: %s (WORKER)", paymentWorker.workerQueue.size()));
         logger.info(String.format("Controller PAYMENT_summary: from %s to %s", from, to));
 
         Map<PaymentProcessorType, PaymentSummaryTotal> map = getPaymentSummaryUC.execute(from, to, fixedAmount);

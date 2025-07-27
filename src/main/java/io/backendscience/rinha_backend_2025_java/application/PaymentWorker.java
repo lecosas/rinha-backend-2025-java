@@ -10,6 +10,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 @Service
@@ -22,74 +23,72 @@ public class PaymentWorker {
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
     private final RedisCommands<String, String> redis;
     private final HealthCheckEngine healthCheckEngine;
-    private boolean isWorking;
+    private final AtomicBoolean isWorking = new AtomicBoolean(false);
     String PROCESSING_COUNTER_KEY = "payment-processing:counter";
 
     public void work() {
-        isWorking = true;
+        isWorking.set(true);
         //for (int i = 1; i <= 4; i++) {
             executorService.submit(() -> {
                 while (true) {
-                    try {
+                    while (true) {
+                        String workerPause = redis.get("worker:pause");
 
-                        while (true) {
-                            String workerPause = redis.get("worker:pause");
+                        if (!workerPause.equals("true"))
+                            break;
 
-                            if (!workerPause.equals("true"))
-                                break;
-
-                            try {
-                                logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
-                                Thread.sleep(100); // small backoff
-                            } catch (InterruptedException e) {
-                                throw new RuntimeException(e);
-                            }
-                        };
-
-                        logger.info("WORKER: free.");
-
-                        PaymentDetail payment = workerQueue.take();
-
-                        PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
-
-                        if (paymentType == PaymentProcessorType.STOPPED) {
-                            logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
-                            Thread.sleep(500);
-                            workerQueue.add(payment);
-                            continue;
-                        } else if (paymentType == PaymentProcessorType.FALLBACK) {
-                            //Thread.sleep(200);
+                        try {
+                            logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
+                            Thread.sleep(1_000); // small backoff
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
                         }
-
-                        logger.info("WORKER: is going to execute.");
-
-
-                        executorService.execute(() -> {
-                            try {
-                                redis.incr(PROCESSING_COUNTER_KEY);
-                                savePaymentUC.execute(payment, paymentType);
-                            } catch (Exception e) {
-                                try {
-                                    healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.STOPPED);
-                                    Thread.sleep(500);
-                                } catch (InterruptedException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                                workerQueue.add(payment);
-                            } finally {
-                                redis.decr(PROCESSING_COUNTER_KEY);
-                            }
-                        });
-
-                    } catch (Exception e) {
-                        continue;
                     }
+
+                    logger.info("WORKER: free.");
+
+//                    PaymentDetail payment = workerQueue.take();
+
+                    PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
+
+                    if (paymentType == PaymentProcessorType.NONE) {
+                        logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
+                        Thread.sleep(500);
+//                        workerQueue.add(payment);
+                        continue;
+                    } else if (paymentType == PaymentProcessorType.FALLBACK) {
+                        Thread.sleep(50);
+                    }
+
+                    PaymentDetail payment = workerQueue.take();
+
+                    logger.info("WORKER: is going to execute.");
+
+
+                    executorService.execute(() -> {
+                        try {
+                            redis.incr(PROCESSING_COUNTER_KEY);
+                            savePaymentUC.execute(payment, paymentType);
+                        } catch (Exception e) {
+                            logger.severe("Entrou no exception: " + e.getMessage());
+                            try {
+                                healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
+                                Thread.sleep(500);
+                            } catch (InterruptedException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                            workerQueue.add(payment);
+                        } finally {
+                            redis.decr(PROCESSING_COUNTER_KEY);
+                        }
+                    });
+
                 }
             });
         //}
     }
 
     public boolean isWorking() {
-        return isWorking;
+        return isWorking.get();
     }
 }

@@ -44,8 +44,6 @@ public class RestClientConfig {
 
     @Bean("restClientDefault")
     public RestClient restClientDefault() {
-        logger.info("VERSÃO COM TIMEOUT E COM CONNECTION POOLING");
-
         return RestClient.builder()
             .baseUrl(paymentProcessorDefaultUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
@@ -55,12 +53,10 @@ public class RestClientConfig {
 
     @Bean("restClientFallback")
     public RestClient restClientFallback() {
-        logger.info("VERSÃO COM TIMEOUT E COM CONNECTION POOLING");
-
         return RestClient.builder()
                 .baseUrl(paymentProcessorFallbackUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .requestFactory(this.clientHttpRequestFactory())
+                //.requestFactory(this.clientHttpRequestFactory())
                 .build();
     }
 

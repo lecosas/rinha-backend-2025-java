@@ -14,11 +14,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: "0.3"
           memory: "50MB"
+#          cpus: "1.5"
+#          memory: "1150MB"
 
   backend-01: &backend
-    image: rinha-backend-2025:0.1
+    image: rinha-backend-2025:0.2
+    #image: docker.io/library/rinha-backend-2025-lecosas:0.0.1-SNAPSHOT
     container_name: backend-01
     hostname: backend-01
     networks:
@@ -72,9 +75,11 @@ services:
       - REDIS_PORT=6379
 
   redis:
-    image: redis:8.0.3-alpine3.21
+    image: redis:7-alpine
+#    image: redis:8.0.3-alpine3.21
     container_name: redis
-    command: ["redis-server", "--save", "", "--appendonly", "no"]
+#    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    command: redis-server --maxmemory 50mb --maxmemory-policy allkeys-lru --save "" --tcp-keepalive 60 --timeout 0
     ports:
       - "6379:6379"
     networks:
@@ -89,7 +94,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: "20MB"
+          memory: "30MB"
 
 networks:
   backend:

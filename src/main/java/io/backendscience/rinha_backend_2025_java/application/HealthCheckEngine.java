@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 @Component
@@ -26,18 +27,18 @@ public class HealthCheckEngine {
     private final HealthCheckGateway healthCheckGateway;
     private final HealthCheckRedisRepository healthCheckRepository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-    private boolean isExecuting;
+    private final AtomicBoolean isExecuting = new AtomicBoolean(false);
 
     public boolean isExecuting() {
-        return (isHealthCheckEngine && isExecuting);
+        return (isHealthCheckEngine && isExecuting.get());
     }
 
     public void startExecuting() {
         if (isHealthCheckEngine) {
+            isExecuting.set(true);
+
             executor.submit(() -> {
                 logger.info("Health Check Engine is starting.");
-
-                isExecuting = true;
 
                 while (true) {
                     logger.info("Retrieving health checks.");
@@ -66,16 +67,15 @@ public class HealthCheckEngine {
             logger.info("Default Health Checks retrieved: " + healthStatusDefault);
 
             if (!healthStatusDefault.failing() && healthStatusDefault.minResponseTime() <= 100) {
+                logger.info("Health Checks set as DEFAULT");
                 setHeathCheckStatus(PaymentProcessorType.DEFAULT);
                 return;
             }
 
             HealthCheckStatus healthStatusFallback = taskFallback.get();
 
-            logger.info("Fallback Health Checks retrieved: " + healthStatusFallback);
-
             if (healthStatusDefault.failing() && healthStatusFallback.failing()) {
-                setHeathCheckStatus(PaymentProcessorType.STOPPED);
+                setHeathCheckStatus(PaymentProcessorType.NONE);
             } else if (healthStatusDefault.failing()
                     && !healthStatusFallback.failing()
                     && healthStatusFallback.minResponseTime() <= 1_000) {
@@ -83,7 +83,7 @@ public class HealthCheckEngine {
             } else if (!healthStatusDefault.failing()) {
                 setHeathCheckStatus(PaymentProcessorType.DEFAULT);
             } else {
-                setHeathCheckStatus(PaymentProcessorType.STOPPED);
+                setHeathCheckStatus(PaymentProcessorType.NONE);
             }
 
         } catch (InterruptedException e) {
