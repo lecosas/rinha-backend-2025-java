@@ -19,14 +19,14 @@ public class WarmupService implements CommandLineRunner {
 
     private final PaymentProcessorGateway paymentPort;
     private final Logger logger = Logger.getLogger(WarmupService.class.getName());
-    private final PurgePaymentsUC purgePaymentsUC;
+    private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
     private final SemaphoreService semaphoreService;
 
     @Override
     public void run(String... args) throws Exception {
         paymentProcessorWarmup();
-        purgePaymentsUC.execute();
+        purgePaymentsService.execute();
         healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
 
         logger.info("Setting PaymentWorker to working state.");

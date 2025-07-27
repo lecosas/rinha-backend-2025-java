@@ -4,4 +4,5 @@ public interface PaymentRepository {
 
     long countPaymentDefault(long from, long to);
     long countPaymentFallback(long from, long to);
+    void purgePayments();
 }

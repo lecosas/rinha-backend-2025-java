@@ -1,9 +1,9 @@
 package io.backendscience.rinha_backend_2025_java.adapter.in.rest;
 
 import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
+import io.backendscience.rinha_backend_2025_java.application.port.in.PurgePaymentsUseCase;
 import io.backendscience.rinha_backend_2025_java.application.service.HealthCheckEngine;
 import io.backendscience.rinha_backend_2025_java.application.service.PaymentWorker;
-import io.backendscience.rinha_backend_2025_java.application.service.PurgePaymentsUC;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ import java.util.logging.Logger;
 public class PaymentsController {
 
     private final GetPaymentSummaryUseCase getPaymentSummaryUC;
-    private final PurgePaymentsUC purgePaymentsUC;
+    private final PurgePaymentsUseCase purgePaymentsUC;
     private final Logger logger = Logger.getLogger(PaymentsController.class.getName());
     private final PaymentWorker paymentWorker;
     private final HealthCheckEngine healthCheckEngine;

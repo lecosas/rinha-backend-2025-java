@@ -45,10 +45,10 @@ public class RestClientConfig {
     @Bean("restClientDefault")
     public RestClient restClientDefault() {
         return RestClient.builder()
-            .baseUrl(paymentProcessorDefaultUrl)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .requestFactory(this.clientHttpRequestFactory())
-            .build();
+                .baseUrl(paymentProcessorDefaultUrl)
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .requestFactory(this.clientHttpRequestFactory())
+                .build();
     }
 
     @Bean("restClientFallback")
@@ -56,30 +56,28 @@ public class RestClientConfig {
         return RestClient.builder()
                 .baseUrl(paymentProcessorFallbackUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                //.requestFactory(this.clientHttpRequestFactory())
+                // .requestFactory(this.clientHttpRequestFactory())
                 .build();
     }
 
     private HttpComponentsClientHttpRequestFactory clientHttpRequestFactory() {
-        logger.info("RestClient: connectionTimeout: " + connectionTimeout);
-        logger.info("RestClient: readTimeout: " + readTimeout);
-        logger.info("RestClient: socketTimeout: " + socketTimeout);
-        logger.info("RestClient: maxTotalConnections: " + maxTotalConnections);
-        logger.info("RestClient: maxPerRouteConnections: " + maxPerRouteConnections);
+        logger.info(String.format(
+                "Configuring RestClient properties: connectionTimeout: %s | readTimeout: %s | socketTimeout: %s | maxTotalConnections: %s | maxPerRouteConnections: %s.",
+                connectionTimeout, readTimeout, socketTimeout, maxTotalConnections, maxPerRouteConnections));
 
         PoolingHttpClientConnectionManager poolingConnManager = new PoolingHttpClientConnectionManager();
         poolingConnManager.setMaxTotal(maxTotalConnections);
         poolingConnManager.setDefaultMaxPerRoute(maxPerRouteConnections);
 
         RequestConfig requestConfig = RequestConfig.custom()
-            .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
-            .setResponseTimeout(Timeout.ofMilliseconds(socketTimeout))
-            .build();
+                .setConnectTimeout(Timeout.ofMilliseconds(connectionTimeout))
+                .setResponseTimeout(Timeout.ofMilliseconds(socketTimeout))
+                .build();
 
         CloseableHttpClient httpClient = HttpClients.custom()
-            .setConnectionManager(poolingConnManager)
-            .setDefaultRequestConfig(requestConfig)
-            .build();
+                .setConnectionManager(poolingConnManager)
+                .setDefaultRequestConfig(requestConfig)
+                .build();
 
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
         factory.setConnectTimeout(Duration.ofMillis(connectionTimeout));
@@ -87,6 +85,4 @@ public class RestClientConfig {
 
         return factory;
     }
-
-
 }
