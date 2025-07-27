@@ -21,19 +21,16 @@ public class PaymentWorker {
     private final Logger logger = Logger.getLogger(PaymentWorker.class.getName());
     private final SavePaymentUC savePaymentUC;
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
-    private final RedisCommands<String, String> redis;
     private final HealthCheckEngine healthCheckEngine;
     private final AtomicBoolean isWorking = new AtomicBoolean(false);
-    String PROCESSING_COUNTER_KEY = "payment-processing:counter";
+    private final SemaphoreService semaphoreService;
 
     public void work() {
         isWorking.set(true);
         //for (int i = 1; i <= 4; i++) {
             executorService.submit(() -> {
                 while (true) {
-                    String workerPause = redis.get("worker:pause");
-
-                    if (workerPause.equals("true")) {
+                    if (semaphoreService.isWorkerPaused()) {
                         logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
                         Thread.sleep(100); // small backoff
                         continue;

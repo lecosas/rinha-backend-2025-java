@@ -3,10 +3,9 @@ package io.backendscience.rinha_backend_2025_java.application.service;
 import io.backendscience.rinha_backend_2025_java.adapter.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
-import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -14,25 +13,29 @@ import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.logging.Logger;
 
-@Component
+@Service
 @RequiredArgsConstructor
-public class WarmupUC implements CommandLineRunner {
+public class WarmupService implements CommandLineRunner {
 
     private final PaymentProcessorGateway paymentPort;
-    private final Logger logger = Logger.getLogger(WarmupUC.class.getName());
+    private final Logger logger = Logger.getLogger(WarmupService.class.getName());
     private final PurgePaymentsUC purgePaymentsUC;
     private final HealthCheckEngine healthCheckEngine;
-    private final RedisCommands<String, String> redis;
+    private final SemaphoreService semaphoreService;
 
     @Override
     public void run(String... args) throws Exception {
-        String PROCESSING_COUNTER_KEY = "payment-processing:counter";
-
         paymentProcessorWarmup();
         purgePaymentsUC.execute();
         healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
-        redis.set("worker:pause", "false");
-        redis.set(PROCESSING_COUNTER_KEY, "0");
+
+        logger.info("Setting PaymentWorker to working state.");
+        semaphoreService.resumeWorker();
+        logger.info("PaymentWorker is set to working.");
+
+        logger.info("Resetting Local Saving Counter.");
+        semaphoreService.resetLocalSavingCounter();
+        logger.info("Local Saving Counter is reset.");
     }
 
     private void paymentProcessorWarmup() {

@@ -1,19 +1,21 @@
-package io.backendscience.rinha_backend_2025_java.adapter.out;
+package io.backendscience.rinha_backend_2025_java.adapter.out.redis;
 
+import io.backendscience.rinha_backend_2025_java.application.port.out.HealthCheckRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 
-@Component
+@Repository
 @RequiredArgsConstructor
-public class HealthCheckRedisRepository {
+public class RedisHealthCheckRepository implements HealthCheckRepository {
 
     private final RedisCommands<String, String> redis;
+    private final String HEALTH_CHECK_STATUS_KEY = "health-check:status";
 
     public PaymentProcessorType getHeathCheckStatus() {
-        String status = redis.get("health-check:status");
-        System.out.println("Getting health-check:status -> " + status);
+        String status = redis.get(HEALTH_CHECK_STATUS_KEY);
+
         if (status.equalsIgnoreCase(PaymentProcessorType.DEFAULT.toString()))
             return PaymentProcessorType.DEFAULT;
         else if (status.equalsIgnoreCase(PaymentProcessorType.FALLBACK.toString()))
@@ -23,8 +25,6 @@ public class HealthCheckRedisRepository {
     }
 
     public void setHeathCheckStatus(PaymentProcessorType type) {
-        System.out.println("Setting to health-check:status -> " + type);
-
-        redis.set("health-check:status", type.toString());
+        redis.set(HEALTH_CHECK_STATUS_KEY, type.toString());
     }
 }

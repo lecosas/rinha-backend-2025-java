@@ -19,12 +19,11 @@ public class SavePaymentUC {
     private final PaymentProcessorGateway paymentPort;
     private final Logger logger = Logger.getLogger(SavePaymentUC.class.getName());
     private final RedisCommands<String, String> redis;
-    String PROCESSING_COUNTER_KEY = "payment-processing:counter";
+    private final SemaphoreService semaphoreService;
 
     public void execute(PaymentDetail paymentDetail, PaymentProcessorType sendTo) {
-
-        OffsetDateTime requestedAt = OffsetDateTime.now(ZoneOffset.UTC)
-                .truncatedTo(ChronoUnit.MILLIS);;
+        OffsetDateTime requestedAt = OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS);
+        ;
 
         long startTime = System.nanoTime();
 
@@ -39,11 +38,9 @@ public class SavePaymentUC {
 
         startTime = System.nanoTime();
 
-        redis.incr(PROCESSING_COUNTER_KEY);
-
+        semaphoreService.incrementLocalSavingCounter();
         redis.zadd(sendTo.toString(), requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
-
-        redis.decr(PROCESSING_COUNTER_KEY);
+        semaphoreService.decrementLocalSavingCounter();
 
         logger.info(String.format("Time to save in the Redis: %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
     }

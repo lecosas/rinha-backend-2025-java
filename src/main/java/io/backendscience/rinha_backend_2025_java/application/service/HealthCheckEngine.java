@@ -1,7 +1,7 @@
 package io.backendscience.rinha_backend_2025_java.application.service;
 
 import io.backendscience.rinha_backend_2025_java.adapter.out.HealthCheckGateway;
-import io.backendscience.rinha_backend_2025_java.adapter.out.HealthCheckRedisRepository;
+import io.backendscience.rinha_backend_2025_java.adapter.out.redis.RedisHealthCheckRepository;
 import io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import lombok.RequiredArgsConstructor;
@@ -19,22 +19,22 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class HealthCheckEngine {
 
-    @Value("${health-check.isEngine}")
-    private Boolean isHealthCheckEngine;
+    @Value("${payment-backend.isMainInstance}")
+    private Boolean isMainInstance;
 
     private final Logger logger = Logger.getLogger(HealthCheckEngine.class.getName());
 
     private final HealthCheckGateway healthCheckGateway;
-    private final HealthCheckRedisRepository healthCheckRepository;
+    private final RedisHealthCheckRepository healthCheckRepository;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
     private final AtomicBoolean isExecuting = new AtomicBoolean(false);
 
     public boolean isExecuting() {
-        return (isHealthCheckEngine && isExecuting.get());
+        return (isMainInstance && isExecuting.get());
     }
 
     public void startExecuting() {
-        if (isHealthCheckEngine) {
+        if (isMainInstance) {
             isExecuting.set(true);
 
             executor.submit(() -> {

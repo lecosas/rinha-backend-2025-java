@@ -31,7 +31,7 @@ services:
 #      - "9998:8080"
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
-      - HEALTH_CHECK_ENGINE=true
+      - PAYMENT_BACKEND_MAIN_INSTANCE=true
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
@@ -94,7 +94,7 @@ services:
       resources:
         limits:
           cpus: "0.2"
-          memory: "30MB"
+          memory: "20MB"
 
 networks:
   backend:
