@@ -1,7 +1,7 @@
 package io.backendscience.rinha_backend_2025_java.adapter.in.rest;
 
-import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
 import io.backendscience.rinha_backend_2025_java.application.port.in.EnqueuePaymentUseCase;
+import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
 import io.backendscience.rinha_backend_2025_java.application.port.in.PurgePaymentsUseCase;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
@@ -31,7 +31,6 @@ public class PaymentsController {
     public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
         logger.info("START: Controller postPaymentsController.");
 
-        System.out.println("Virtual Threads: " + Thread.currentThread().isVirtual());
         long startTime = System.nanoTime();
 
         PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
@@ -69,7 +68,8 @@ public class PaymentsController {
         purgePaymentsUC.execute();
 
         logger.info(String.format(
-                "END: Controller postPurgePaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
+                "END: Controller postPurgePaymentsController in %.3fms",
+                (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
     public record PaymentBody(String correlationId, BigDecimal amount) {}

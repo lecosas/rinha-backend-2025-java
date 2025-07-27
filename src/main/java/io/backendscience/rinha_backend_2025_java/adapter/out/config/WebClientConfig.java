@@ -48,20 +48,19 @@ public class WebClientConfig {
 
     private final Logger logger = Logger.getLogger(WebClientConfig.class.getName());
 
-    @Bean("webClientDefault")
-    public WebClient webClientDefault() {
-        return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
-                .baseUrl(paymentProcessorDefaultUrl)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build();
-    }
+//    @Bean("webClientDefault")
+//    public WebClient webClientDefault() {
+//        return WebClient.builder()
+//                .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
+//                .baseUrl(paymentProcessorDefaultUrl)
+//                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+//                .build();
+//    }
 
-    @Bean("webClientFallback")
-    public WebClient webClientFallback() {
+    @Bean
+    public WebClient webClient() {
         return WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
-                .baseUrl(paymentProcessorFallbackUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .build();
     }
@@ -81,6 +80,8 @@ public class WebClientConfig {
 
         return HttpClient.create(provider)
                 .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionTimeout)
+                .keepAlive(true)
+                .compress(false)
                 .responseTimeout(Duration.ofMillis(socketTimeout))
                 .doOnConnected(
                         conn -> conn.addHandlerLast(new ReadTimeoutHandler(readTimeout / 1_000)) // Convert ms to s

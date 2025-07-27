@@ -4,6 +4,7 @@ import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentPro
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -20,11 +21,17 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
 
     private final Logger logger = Logger.getLogger(PaymentProcessorWebClient.class.getName());
 
-    @Qualifier("webClientDefault")
-    private final WebClient webClientDefault;
+    @Value("${payment-processor.default-url}")
+    private String paymentProcessorDefaultUrl;
 
-    @Qualifier("webClientFallback")
-    private final WebClient webClientFallback;
+    @Value("${payment-processor.fallback-url}")
+    private String paymentProcessorFallbackUrl;
+
+//    @Qualifier("webClientDefault")
+    private final WebClient webClient;
+
+//    @Qualifier("webClientFallback")
+//    private final WebClient webClientFallback;
 
     public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
         String payToSend = new StringBuilder("{")
@@ -34,9 +41,9 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .append("}")
                 .toString();
 
-        ResponseEntity<Void> defaultResponse = webClientDefault
+        ResponseEntity<Void> defaultResponse = webClient
                 .post()
-                .uri("/payments")
+                .uri(paymentProcessorDefaultUrl + "/payments")
                 .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
@@ -63,9 +70,9 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .append("}")
                 .toString();
 
-        ResponseEntity<Void> fallbackResponse = webClientFallback
+        ResponseEntity<Void> fallbackResponse = webClient
                 .post()
-                .uri("/payments")
+                .uri(paymentProcessorFallbackUrl + "/payments")
                 .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {

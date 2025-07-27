@@ -12,9 +12,9 @@ COPY . .
 # Build native image using Maven
 RUN ./mvnw -Pnative native:compile
 
-RUN ls -l target
+#RUN ls -l target
 
-CMD ["./target/rinha-backend-2025-lecosas"]
+CMD ["./target/rinha-backend-2025-java"]
 #
 #RUN ls -l
 #
@@ -23,14 +23,14 @@ CMD ["./target/rinha-backend-2025-lecosas"]
 #RUN ls -l /app/target
 #
 ## Stage 2: Create minimal runtime container
-#FROM arm64v8/alpine:3.22
+#FROM alpine:3.22
 #
 #RUN ls -l /
 #
 #WORKDIR /app
 #
 ## Copy binary from previous stage
-#COPY --from=builder /app/target/rinha-backend-2025-lecosas app
+#COPY --from=builder /app/target/rinha-backend-2025-java app
 #
 #RUN ls -l
 #

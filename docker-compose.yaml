@@ -14,10 +14,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.3"
+          cpus: "0.15"
           memory: "50MB"
-#          cpus: "1.5"
-#          memory: "1150MB"
 
   backend-01: &backend
     image: rinha-backend-2025:0.2
@@ -27,10 +25,8 @@ services:
     networks:
       - backend
       - payment-processor
-#    ports:
-#      - "9998:8080"
     environment:
-      #- SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
@@ -50,16 +46,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.65"
-          memory: "160MB"
-#          cpus: "2.7"
-#          memory: "3200MB"
+          cpus: "0.6"
+          memory: "100MB"
 
   backend-02:
     <<: *backend
     container_name: backend-02
     hostname: backend-02
     environment:
+      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
@@ -77,9 +72,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    command: redis-server --save "" --appendonly no --maxmemory 20Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
-    ports:
-      - "6379:6379"
+    command: redis-server --save "" --appendonly no --maxmemory 50Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
+#    ports:
+#      - "6379:6379"
     networks:
       - backend
     healthcheck:
@@ -90,8 +85,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.2"
-          memory: "20MB" #Change in command line too.
+          cpus: "0.15"
+          memory: "50MB" #Change in command line too.
 
 networks:
   backend:
