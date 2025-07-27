@@ -1,6 +1,6 @@
-package io.backendscience.rinha_backend_2025_java.adapter.outbound;
+package io.backendscience.rinha_backend_2025_java.adapter.out.redis;
 
-import io.backendscience.rinha_backend_2025_java.application.port.outbound.PaymentRepositoryPort;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.Range;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
-public class PaymentRedisRepository implements PaymentRepositoryPort {
+public class RedisPaymentRepository implements PaymentRepository {
 
     private final RedisCommands<String, String> redis;
 

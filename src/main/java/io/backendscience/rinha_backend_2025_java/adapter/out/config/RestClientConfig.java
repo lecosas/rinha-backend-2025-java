@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.infrastructure.configuration;
+package io.backendscience.rinha_backend_2025_java.adapter.out.config;
 
 import org.apache.hc.client5.http.config.RequestConfig;
 import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;

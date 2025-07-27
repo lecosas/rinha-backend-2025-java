@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.adapter.outbound.resources;
+package io.backendscience.rinha_backend_2025_java.adapter.out.resources;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;

@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
 import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;

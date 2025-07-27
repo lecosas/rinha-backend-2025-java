@@ -1,6 +1,6 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.outbound.PaymentProcessorGateway;
+import io.backendscience.rinha_backend_2025_java.adapter.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -25,7 +25,6 @@ public class SavePaymentUC {
 
         OffsetDateTime requestedAt = OffsetDateTime.now(ZoneOffset.UTC)
                 .truncatedTo(ChronoUnit.MILLIS);;
-//        OffsetDateTime requestedAt = OffsetDateTime.now();
 
         long startTime = System.nanoTime();
 
@@ -40,11 +39,11 @@ public class SavePaymentUC {
 
         startTime = System.nanoTime();
 
-//        redis.incr(PROCESSING_COUNTER_KEY);
+        redis.incr(PROCESSING_COUNTER_KEY);
 
         redis.zadd(sendTo.toString(), requestedAt.toInstant().toEpochMilli(), paymentDetail.correlationId());
 
-//        redis.decr(PROCESSING_COUNTER_KEY);
+        redis.decr(PROCESSING_COUNTER_KEY);
 
         logger.info(String.format("Time to save in the Redis: %.3f", (System.nanoTime() - startTime) / 1_000_000.0));
     }

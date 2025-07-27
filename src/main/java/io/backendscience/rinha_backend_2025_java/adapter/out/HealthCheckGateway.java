@@ -1,8 +1,6 @@
-package io.backendscience.rinha_backend_2025_java.adapter.outbound;
+package io.backendscience.rinha_backend_2025_java.adapter.out;
 
 import io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus;
-import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
-import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatusCode;
@@ -10,9 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
-import java.math.BigDecimal;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 
 @Service

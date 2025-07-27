@@ -1,6 +1,6 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.outbound.PaymentProcessorGateway;
+import io.backendscience.rinha_backend_2025_java.adapter.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.api.sync.RedisCommands;
@@ -51,7 +51,8 @@ public class WarmupUC implements CommandLineRunner {
         }
 
         try {
-            paymentPort.savePaymentFallback(paymentDetail, OffsetDateTime.now());
+            paymentPort.savePaymentFallback(paymentDetail, OffsetDateTime.now(ZoneOffset.UTC)
+                    .truncatedTo(ChronoUnit.MILLIS));
         } catch (Exception ex) {
 
         }

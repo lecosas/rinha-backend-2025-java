@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
@@ -31,18 +31,12 @@ public class PaymentWorker {
         //for (int i = 1; i <= 4; i++) {
             executorService.submit(() -> {
                 while (true) {
-                    while (true) {
-                        String workerPause = redis.get("worker:pause");
+                    String workerPause = redis.get("worker:pause");
 
-                        if (!workerPause.equals("true"))
-                            break;
-
-                        try {
-                            logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
-                            Thread.sleep(1_000); // small backoff
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                    if (workerPause.equals("true")) {
+                        logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
+                        Thread.sleep(100); // small backoff
+                        continue;
                     }
 
                     logger.info("WORKER: free.");
@@ -67,7 +61,7 @@ public class PaymentWorker {
 
                     executorService.execute(() -> {
                         try {
-                            redis.incr(PROCESSING_COUNTER_KEY);
+//                            redis.incr(PROCESSING_COUNTER_KEY);
                             savePaymentUC.execute(payment, paymentType);
                         } catch (Exception e) {
                             logger.severe("Entrou no exception: " + e.getMessage());
@@ -79,7 +73,7 @@ public class PaymentWorker {
                             }
                             workerQueue.add(payment);
                         } finally {
-                            redis.decr(PROCESSING_COUNTER_KEY);
+//                            redis.decr(PROCESSING_COUNTER_KEY);
                         }
                     });
 

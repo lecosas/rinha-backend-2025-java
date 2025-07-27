@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.adapter.outbound;
+package io.backendscience.rinha_backend_2025_java.adapter.out;
 
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import io.lettuce.core.api.sync.RedisCommands;

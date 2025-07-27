@@ -1,7 +1,7 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.outbound.HealthCheckGateway;
-import io.backendscience.rinha_backend_2025_java.adapter.outbound.HealthCheckRedisRepository;
+import io.backendscience.rinha_backend_2025_java.adapter.out.HealthCheckGateway;
+import io.backendscience.rinha_backend_2025_java.adapter.out.HealthCheckRedisRepository;
 import io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package io.backendscience.rinha_backend_2025_java.infrastructure.configuration;
+package io.backendscience.rinha_backend_2025_java.adapter.out.config;
 
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;

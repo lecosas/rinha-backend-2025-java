@@ -1,9 +1,9 @@
-package io.backendscience.rinha_backend_2025_java.application;
+package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.application.port.outbound.PaymentRepositoryPort;
-import io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus;
+import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
+import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
-import io.backendscience.rinha_backend_2025_java.domain.PaymentSummaryTotal;
+import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
 import io.lettuce.core.api.sync.RedisCommands;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,17 +19,15 @@ import java.util.logging.Logger;
 
 @Component
 @RequiredArgsConstructor
-public class GetPaymentSummaryUC {
+public class PaymentSummaryService implements GetPaymentSummaryUseCase {
 
-    private final Logger logger = Logger.getLogger(GetPaymentSummaryUC.class.getName());
-    private final PaymentRepositoryPort paymentRepository;
+    private final Logger logger = Logger.getLogger(PaymentSummaryService.class.getName());
+    private final PaymentRepository paymentRepository;
     private final RedisCommands<String, String> redis;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+    private BigDecimal fixedAmount = BigDecimal.ZERO;
 
-    public Map<PaymentProcessorType, PaymentSummaryTotal> execute(
-            OffsetDateTime from, OffsetDateTime to, BigDecimal fixedAmount) {
-        Map<PaymentProcessorType, PaymentSummaryTotal> map = new HashMap<>();
-
+    public PaymentSummary execute(OffsetDateTime from, OffsetDateTime to) {
         long countDefault;
         long countFallback;
 
@@ -40,11 +38,11 @@ public class GetPaymentSummaryUC {
 
         redis.set("worker:pause", "true");
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        //        try {
+        //            Thread.sleep(20);
+        //        } catch (InterruptedException e) {
+        //            throw new RuntimeException(e);
+        //        }
 
         String PROCESSING_COUNTER_KEY = "payment-processing:counter";
         String counterStr = "";
@@ -52,7 +50,7 @@ public class GetPaymentSummaryUC {
         int i = 1;
 
         // Wait until counter is zero
-        while (i <= 10) {
+        while (i <= 100) {
             i++;
 
             counterStr = redis.get(PROCESSING_COUNTER_KEY);
@@ -64,10 +62,9 @@ public class GetPaymentSummaryUC {
                 break; // Safe to proceed with getSummary
             }
 
-
             // Optional: add timeout or logging here
             try {
-                Thread.sleep(50); // small backoff
+                Thread.sleep(10); // small backoff
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -79,11 +76,11 @@ public class GetPaymentSummaryUC {
             logger.info("GET_SUMMARY: queue empty.");
         }
 
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        //        try {
+        //            Thread.sleep(100);
+        //        } catch (InterruptedException e) {
+        //            throw new RuntimeException(e);
+        //        }
 
         CompletableFuture<Long> taskCountDefault = CompletableFuture.supplyAsync(
                 () -> paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp), executor);
@@ -98,29 +95,25 @@ public class GetPaymentSummaryUC {
             throw new RuntimeException(e);
         }
 
-        //        countDefault = paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp);
-        //        countFallback = paymentRepository.countPaymentFallback(fromTimestamp, toTimestamp);
-
         try {
-            Thread.sleep(50);
+            Thread.sleep(10);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
 
         redis.set("worker:pause", "false");
 
         logger.info("GET_SUMMARY: unlocked worker");
 
-        map.put(
-                PaymentProcessorType.DEFAULT,
-                new PaymentSummaryTotal(
-                        countDefault, BigDecimal.valueOf(countDefault).multiply(fixedAmount)));
-        map.put(
-                PaymentProcessorType.FALLBACK,
-                new PaymentSummaryTotal(
+        return new PaymentSummary(
+                new PaymentSummary.PaymentSummaryDetail(
+                        countDefault, BigDecimal.valueOf(countDefault).multiply(fixedAmount)),
+                new PaymentSummary.PaymentSummaryDetail(
                         countFallback, BigDecimal.valueOf(countFallback).multiply(fixedAmount)));
+    }
 
-        return map;
+    @Override
+    public void setFixedAmount(BigDecimal fixedAmount) {
+        this.fixedAmount = fixedAmount;
     }
 }
