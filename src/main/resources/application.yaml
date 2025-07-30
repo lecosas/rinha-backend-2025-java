@@ -1,0 +1,58 @@
+httpclient:
+  connection-timeout: ${HTTPCLIENT_CONNECTION_TIMEOUT:5000}
+  read-timeout: ${HTTPCLIENT_READ_TIMEOUT:10000}
+  socket-timeout: ${HTTPCLIENT_SOCKET_TIMEOUT:10000}
+  max-total-connections: ${HTTPCLIENT_MAX_TOTAL_CONNECTIONS:400}
+  max-per-route-connections: ${HTTPCLIENT_MAX_PER_ROUTE_CONNECTIONS:400}
+  max-idle-time: ${HTTPCLIENT_MAX_IDLE_TIME:60000}
+  max-life-time: ${HTTPCLIENT_MAX_LIFE_TIME:60000}
+
+payment-backend:
+  main-instance: ${PAYMENT_BACKEND_MAIN_INSTANCE:false}
+  worker:
+    fallback-delay: ${PAYMENT_BACKEND_WORKER_FALLBACK_DELAY:50}
+    thread-delay: ${PAYMENT_BACKEND_WORKER_THREAD_DELAY:2}
+
+payment-processor:
+  default-url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://localhost:8001}
+  fallback-url: ${PAYMENT_PROCESSOR_FALLBACK_URL:http://localhost:8002}
+
+#logging:
+#  level:
+#    root: INFO
+#    org.springframework.web.client.RestClient: DEBUG
+#    org.apache.hc.client5.http: DEBUG
+#    org.apache.hc.core5.http: DEBUG
+#    org.apache.hc.core5.http.impl.io: DEBUG
+#    org.apache.hc.client5.http.impl.classic: DEBUG
+#    org.apache.hc.client5.http.wire: DEBUG
+
+redis:
+  url: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
+
+server:
+  port: 8080
+
+spring:
+  application:
+    admin:
+      enabled: false
+    name: rinha-backend-2025-lecosas
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration
+  main:
+    banner-mode: off
+  threads:
+    virtual:
+      enabled: true
+  undertow:
+    threads:
+      io: 2
+      worker: 16
+    buffer-size: 2048
+    direct-buffers: true
+#    eager-filter-init: false
+    accesslog:
+      enabled: false
+    always-set-keep-alive: false
+    max-http-post-size: 1KB
