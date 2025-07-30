@@ -20,6 +20,9 @@ public class PaymentWorker {
     @Value("${payment-backend.worker.fallback-delay}")
     private long fallbackDelay;
 
+    @Value("${payment-backend.worker.thread-delay}")
+    private long threadDelay;
+
     private final BlockingQueue<PaymentDetail> workerQueue = new LinkedBlockingQueue<>();
     private final Logger logger = Logger.getLogger(PaymentWorker.class.getName());
     private final PaymentService paymentService;
@@ -30,7 +33,7 @@ public class PaymentWorker {
 
     public void work() {
         isWorking.set(true);
-        // for (int i = 1; i <= 4; i++) {
+        //for (int i = 1; i <= 4; i++) {
         executorService.submit(() -> {
             while (true) {
                 if (semaphoreService.isWorkerPaused()) {
@@ -53,6 +56,8 @@ public class PaymentWorker {
 
                 logger.info("WORKER: is going to execute.");
 
+                pauseFor(threadDelay);
+
                 executorService.execute(() -> {
                     try {
                         paymentService.process(payment, paymentType);
@@ -64,7 +69,7 @@ public class PaymentWorker {
                 });
             }
         });
-        // }
+        //}
     }
 
     private void pauseFor(long milliseconds) {

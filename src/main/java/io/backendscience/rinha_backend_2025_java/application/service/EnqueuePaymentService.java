@@ -23,11 +23,6 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
 
         if (isMainInstance && !healthCheckEngine.isExecuting()) {
             healthCheckEngine.startExecuting();
-            try {
-                Thread.sleep(80);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
         }
 
         if (!paymentWorker.isWorking()) paymentWorker.work();
