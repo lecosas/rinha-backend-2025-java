@@ -36,16 +36,17 @@ services:
 #          memory: "40MB"
 
   openresty:
-    image: openresty/openresty:alpine
+#    image: openresty/openresty:alpine
+    image: lecosas/openresty-rinha-alpine:latest
     container_name: openresty
     ports:
       - "9999:9999"
-    volumes:
-      - ./nginx/lualib/http.lua:/usr/local/openresty/lualib/resty/http.lua
-      - ./nginx/lualib/http_headers.lua:/usr/local/openresty/lualib/resty/http_headers.lua
-      - ./nginx/lualib/http_connect.lua:/usr/local/openresty/lualib/resty/http_connect.lua
-      - ./nginx:/usr/local/openresty/nginx/conf
-      - ./nginx/lua:/usr/local/openresty/nginx/lua
+#    volumes:
+#      - ./nginx/lualib/http.lua:/usr/local/openresty/lualib/resty/http.lua
+#      - ./nginx/lualib/http_headers.lua:/usr/local/openresty/lualib/resty/http_headers.lua
+#      - ./nginx/lualib/http_connect.lua:/usr/local/openresty/lualib/resty/http_connect.lua
+#      - ./nginx:/usr/local/openresty/nginx/conf
+#      - ./nginx/lua:/usr/local/openresty/nginx/lua
     depends_on:
       - backend-01
       - backend-02
@@ -66,7 +67,7 @@ services:
       - backend
       - payment-processor
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+#      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
@@ -95,7 +96,7 @@ services:
     container_name: backend-02
     hostname: backend-02
     environment:
-      - SPRING_PROFILES_ACTIVE=prod
+#      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0

@@ -1,0 +1,13 @@
+# Use the official OpenResty Alpine "fat" image as the base
+FROM openresty/openresty:alpine-fat
+
+# Install git to clone repositories if needed (e.g., for specific luarocks packages)
+# and update apk cache
+RUN apk update && apk add --no-cache git
+
+# Install the lua-resty-http module using luarocks
+# The 'fat' image includes luarocks
+RUN luarocks install lua-resty-http
+
+COPY nginx/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY nginx/lua/ /usr/local/openresty/nginx/lua/
