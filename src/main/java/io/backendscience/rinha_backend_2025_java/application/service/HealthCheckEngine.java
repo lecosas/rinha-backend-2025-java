@@ -33,7 +33,7 @@ public class HealthCheckEngine {
         return isExecuting.get();
     }
 
-    public void startExecuting() {
+    public void startExecution() {
         if (isMainInstance) {
             isExecuting.set(true);
 

@@ -22,6 +22,7 @@ public class WarmupService implements CommandLineRunner {
     private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
     private final SemaphoreService semaphoreService;
+    private final PaymentWorker paymentWorker;
 
     @Override
     public void run(String... args) throws Exception {
@@ -36,6 +37,9 @@ public class WarmupService implements CommandLineRunner {
         logger.info("Resetting Local Saving Counter.");
         semaphoreService.resetLocalSavingCounter();
         logger.info("Local Saving Counter is reset.");
+
+        healthCheckEngine.startExecution();
+        paymentWorker.startExecution();
     }
 
     private void paymentProcessorWarmup() {

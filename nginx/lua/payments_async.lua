@@ -32,13 +32,10 @@ local function async_post(premature, body)
 --     end
 end
 
--- schedule the async POST
 local ok, err = ngx.timer.at(0, async_post, body)
---local ok, err = ngx.timer.at(0, async_post, body)
+
 -- if not ok then
 --     ngx.log(ngx.ERR, "Failed to create async timer: ", err)
 -- end
 
---Respond to client immediately
-ngx.status = 202
---ngx.say("Accepted")
+return ngx.exit(202)
