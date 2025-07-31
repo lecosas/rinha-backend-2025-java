@@ -72,5 +72,13 @@ public class PaymentsController {
                 (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
+    private void pauseFor(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public record PaymentBody(String correlationId, BigDecimal amount) {}
 }

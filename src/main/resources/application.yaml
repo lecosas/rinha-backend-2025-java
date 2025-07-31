@@ -19,7 +19,7 @@ payment-processor:
 
 #logging:
 #  level:
-#    root: INFO
+#    root: DEBUG
 #    org.springframework.web.client.RestClient: DEBUG
 #    org.apache.hc.client5.http: DEBUG
 #    org.apache.hc.core5.http: DEBUG

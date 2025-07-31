@@ -1,11 +1,51 @@
 services:
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
+#  haproxy:
+#    image: haproxy:alpine
+#    container_name: haproxy
+#    ports:
+#      - "9999:9999"
+#    volumes:
+#      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
+#    depends_on:
+#      - backend-01
+#      - backend-02
+#    networks:
+#      - backend
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.3"
+#          memory: "40MB"
+
+#  nginx:
+#    image: nginx:alpine
+#    container_name: nginx
+#    ports:
+#      - "9999:9999"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+#    depends_on:
+#      - backend-01
+#      - backend-02
+#    networks:
+#      - backend
+#    deploy:
+#      resources:
+#        limits:
+#          cpus: "0.3"
+#          memory: "40MB"
+
+  openresty:
+    image: openresty/openresty:alpine
+    container_name: openresty
     ports:
       - "9999:9999"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/lualib/http.lua:/usr/local/openresty/lualib/resty/http.lua
+      - ./nginx/lualib/http_headers.lua:/usr/local/openresty/lualib/resty/http_headers.lua
+      - ./nginx/lualib/http_connect.lua:/usr/local/openresty/lualib/resty/http_connect.lua
+      - ./nginx:/usr/local/openresty/nginx/conf
+      - ./nginx/lua:/usr/local/openresty/nginx/lua
     depends_on:
       - backend-01
       - backend-02
@@ -14,12 +54,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: "50MB"
+          cpus: "0.3"
+          memory: "40MB"
 
   backend-01: &backend
-    image: rinha-backend-2025:0.2
-    #image: docker.io/library/rinha-backend-2025-lecosas:0.0.1-SNAPSHOT
+    #image: docker.io/library/rinha-backend-2025-java:0.0.1-SNAPSHOT
+    image: lecosas/rinha-backend-2025-java-spring-graalvm:latest
     container_name: backend-01
     hostname: backend-01
     networks:
@@ -28,7 +68,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
-      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
+      - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
@@ -46,8 +87,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.6"
-          memory: "100MB"
+          cpus: "0.55"
+          memory: "130MB"
 
   backend-02:
     <<: *backend
@@ -56,7 +97,8 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
-      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=10
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
+      - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
       - HTTPCLIENT_SOCKET_TIMEOUT=10000
@@ -72,9 +114,9 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    command: redis-server --save "" --appendonly no --maxmemory 50Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
-#    ports:
-#      - "6379:6379"
+    command: redis-server --save "" --appendonly no --maxmemory 40Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
+    ports:
+      - "6379:6379"
     networks:
       - backend
     healthcheck:
@@ -85,8 +127,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.15"
-          memory: "50MB" #Change in command line too.
+          cpus: "0.1"
+          memory: "40MB" #Change in command line too.
 
 networks:
   backend:
