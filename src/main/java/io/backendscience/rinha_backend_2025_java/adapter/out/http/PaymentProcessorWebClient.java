@@ -1,5 +1,6 @@
 package io.backendscience.rinha_backend_2025_java.adapter.out.http;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
@@ -27,19 +29,21 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
     @Value("${payment-processor.fallback-url}")
     private String paymentProcessorFallbackUrl;
 
-//    @Qualifier("webClientDefault")
     private final WebClient webClient;
 
-//    @Qualifier("webClientFallback")
-//    private final WebClient webClientFallback;
-
     public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-        String payToSend = new StringBuilder("{")
-                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-                .append("}")
-                .toString();
+        //        String payToSend = new StringBuilder("{")
+        //                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
+        //                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
+        //
+        // .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
+        //                .append("}")
+        //                .toString();
+
+        PaymentDetailToSend payToSend = new PaymentDetailToSend(
+                paymentDetail.correlationId(),
+                paymentDetail.amount(),
+                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
 
         ResponseEntity<Void> defaultResponse = webClient
                 .post()
@@ -63,12 +67,18 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
     }
 
     public void sendPaymentToFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-        String payToSend = new StringBuilder("{")
-                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-                .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-                .append("}")
-                .toString();
+        //        String payToSend = new StringBuilder("{")
+        //                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
+        //                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
+        //
+        // .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
+        //                .append("}")
+        //                .toString();
+
+        PaymentDetailToSend payToSend = new PaymentDetailToSend(
+                paymentDetail.correlationId(),
+                paymentDetail.amount(),
+                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
 
         ResponseEntity<Void> fallbackResponse = webClient
                 .post()
@@ -91,5 +101,8 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
         }
     }
 
-
+    private record PaymentDetailToSend(
+            @JsonProperty("correlationId") String correlationId,
+            @JsonProperty("amount") BigDecimal amount,
+            @JsonProperty("requestedAt") String requestedAt) {}
 }

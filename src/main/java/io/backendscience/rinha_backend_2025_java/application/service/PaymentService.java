@@ -1,6 +1,5 @@
 package io.backendscience.rinha_backend_2025_java.application.service;
 
-import io.backendscience.rinha_backend_2025_java.adapter.out.http.PaymentProcessorClient;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;

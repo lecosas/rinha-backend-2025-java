@@ -28,18 +28,22 @@ public class WarmupService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         paymentProcessorWarmup();
         purgePaymentsService.execute();
-        healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
 
-        logger.info("Setting PaymentWorker to working state.");
-        semaphoreService.resumeWorker();
-        logger.info("PaymentWorker is set to working.");
+        for (int i = 0; i < 100; i++) {
+            healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
 
-        logger.info("Resetting Local Saving Counter.");
-        semaphoreService.resetLocalSavingCounter();
-        logger.info("Local Saving Counter is reset.");
+            logger.info("Setting PaymentWorker to working state.");
+            semaphoreService.resumeWorker();
+            logger.info("PaymentWorker is set to working.");
+
+            logger.info("Resetting Local Saving Counter.");
+            semaphoreService.resetLocalSavingCounter();
+            logger.info("Local Saving Counter is reset.");
+        }
 
         healthCheckEngine.startExecution();
-        paymentWorker.startExecution();
+
+        // paymentWorker.startExecution();
     }
 
     private void paymentProcessorWarmup() {

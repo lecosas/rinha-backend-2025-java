@@ -34,13 +34,16 @@ public class PaymentWorker {
 
     public void startExecution() {
 //        isWorking.set(true);
-        work();
+        if (!isWorking.get()) work();
     }
 
     public void work() {
         isWorking.set(true);
+        logger.info("Starting Payment Worker.");
         //for (int i = 1; i <= 4; i++) {
         executorService.submit(() -> {
+            logger.info("Payment Worker started.");
+
             while (true) {
                 if (semaphoreService.isWorkerPaused()) {
                     logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");

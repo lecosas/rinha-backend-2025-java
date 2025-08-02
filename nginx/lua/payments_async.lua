@@ -1,41 +1,39 @@
 local http = require("resty.http")
+local cjson = require("cjson.safe")
 
 ngx.req.read_body()
 local body = ngx.req.get_body_data()
---local headers = ngx.req.get_headers()
+local httpc = http.new()
+httpc:set_keepalive()
+httpc:set_timeout(1500)
 
-local function async_post(premature, body)
---local function async_post(premature, body)
+local function async_post(premature, rawBody)
     if premature then
         return
     end
 
-    local httpc = http.new()
+    local decodedBody = cjson.decode(rawBody)
+
+
     local backends = {
-        "http://backend-01:8080/payments",
-        "http://backend-02:8080/payments"
+        "http://backend-01:8080/payments/" .. tostring(decodedBody.amount),
+        "http://backend-02:8080/payments/" .. tostring(decodedBody.amount)
     }
 
-    --math.randomseed(os.time() + ngx.worker.pid())
     local backend = backends[math.random(#backends)]
 
-    local res, err = httpc:request_uri(backend, {
+    --local httpc = http.new()
+
+    httpc:request_uri(backend, {
         method = "POST",
-        body = body,
-        headers = {
-            ["Content-Type"] = "application/json",
-        },
+        keepalive = true,
+        keepalive_timeout = 60000,
+        keepalive_pool = 1000,
     })
 
---     if not res then
---         ngx.log(ngx.ERR, "Failed to send async request to ", backend, ": ", err)
---     end
+    --ngx.sleep(0.0015)
 end
 
-local ok, err = ngx.timer.at(0, async_post, body)
-
--- if not ok then
---     ngx.log(ngx.ERR, "Failed to create async timer: ", err)
--- end
+ngx.timer.at(0, async_post, body)
 
 return ngx.exit(202)

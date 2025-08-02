@@ -29,19 +29,17 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
     public void execute(PaymentDetail paymentDetail) {
         paymentSummaryService.setFixedAmount(paymentDetail.amount());
 
-        //        if (isMainInstance && !healthCheckEngine.isExecuting()) {
-        //            healthCheckEngine.startExecuting();
-        //        }
-        //
-        //        if (!paymentWorker.isWorking()) paymentWorker.work();
-
-        // paymentWorker.addToQueue(paymentDetail);
+////                if (isMainInstance && !healthCheckEngine.isExecuting()) {
+////                    healthCheckEngine.startExecuting();
+////                }
+//
+//        paymentWorker.startExecution();
+//        paymentWorker.addToQueue(paymentDetail);
 
         if (!semaphoreService.isWorkerPaused()) {
             PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
 
-            if (paymentType != PaymentProcessorType.NONE) {
-
+            if (paymentType == PaymentProcessorType.DEFAULT) {
                 try {
                     paymentService.process(paymentDetail, paymentType);
                     return;
@@ -51,8 +49,9 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
             }
         }
 
+//        pauseFor(10);
         paymentWorker.addToQueue(paymentDetail);
-
+        paymentWorker.startExecution();
     }
 
     private void pauseFor(long milliseconds) {

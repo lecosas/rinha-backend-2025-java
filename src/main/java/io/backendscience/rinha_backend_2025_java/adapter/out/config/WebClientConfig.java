@@ -48,15 +48,6 @@ public class WebClientConfig {
 
     private final Logger logger = Logger.getLogger(WebClientConfig.class.getName());
 
-//    @Bean("webClientDefault")
-//    public WebClient webClientDefault() {
-//        return WebClient.builder()
-//                .clientConnector(new ReactorClientHttpConnector(buildHttpClient()))
-//                .baseUrl(paymentProcessorDefaultUrl)
-//                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                .build();
-//    }
-
     @Bean
     public WebClient webClient() {
         return WebClient.builder()
