@@ -22,8 +22,6 @@ local function async_post(premature, rawBody)
 
     local backend = backends[math.random(#backends)]
 
-    --local httpc = http.new()
-
     httpc:request_uri(backend, {
         method = "POST",
         keepalive = true,
@@ -31,7 +29,7 @@ local function async_post(premature, rawBody)
         keepalive_pool = 1000,
     })
 
-    --ngx.sleep(0.0015)
+    ngx.sleep(0.001)
 end
 
 ngx.timer.at(0, async_post, body)

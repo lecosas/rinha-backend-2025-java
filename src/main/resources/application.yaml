@@ -44,7 +44,7 @@ spring:
     banner-mode: off
   threads:
     virtual:
-      enabled: true
+      enabled: ${JAVA_VIRTUAL_THREADS:true}
   undertow:
     threads:
       io: 2
