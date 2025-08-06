@@ -60,7 +60,7 @@ services:
 
   backend-01: &backend
     #image: docker.io/library/rinha-backend-2025-java:0.0.1-SNAPSHOT
-    image: lecosas/rinha-backend-2025-java-spring-graalvm:latest
+    image: lecosas/rinha-backend-2025-java-spring:latest
 #    image: lecosas/rinha-backend-2025-java-spring-graalvm:native
     container_name: backend-01
     hostname: backend-01
@@ -68,7 +68,7 @@ services:
       - backend
       - payment-processor
     environment:
- #     - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=70
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
@@ -97,7 +97,7 @@ services:
     container_name: backend-02
     hostname: backend-02
     environment:
-#      - SPRING_PROFILES_ACTIVE=prod
+      - SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=70
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
@@ -116,7 +116,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    command: redis-server --save "" --appendonly no --maxmemory 40Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
+    command: redis-server --save "" --appendonly no --maxmemory 30Mb --maxmemory-policy allkeys-lru --tcp-keepalive 60 --timeout 0
     ports:
       - "6379:6379"
     networks:

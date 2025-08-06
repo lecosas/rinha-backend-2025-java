@@ -51,7 +51,7 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.severe(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
+                    logger.warning(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
@@ -86,7 +86,7 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .bodyValue(payToSend)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.severe(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
+                    logger.warning(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
                     return Mono.empty();
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {

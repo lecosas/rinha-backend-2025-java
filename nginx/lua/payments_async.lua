@@ -14,7 +14,6 @@ local function async_post(premature, rawBody)
 
     local decodedBody = cjson.decode(rawBody)
 
-
     local backends = {
         "http://backend-01:8080/payments/" .. tostring(decodedBody.amount),
         "http://backend-02:8080/payments/" .. tostring(decodedBody.amount)
