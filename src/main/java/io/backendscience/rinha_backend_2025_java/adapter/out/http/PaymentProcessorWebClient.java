@@ -32,18 +32,23 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
     private final WebClient webClient;
 
     public void sendPaymentToDefault(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-        //        String payToSend = new StringBuilder("{")
-        //                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-        //                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-        //
-        // .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-        //                .append("}")
-        //                .toString();
+        String payToSend = new StringBuilder("{")
+                .append("\"correlationId\":\"")
+                .append(paymentDetail.correlationId())
+                .append("\",")
+                .append("\"amount\":")
+                .append(paymentDetail.amount().toPlainString())
+                .append(",")
+                .append("\"requestedAt\":\"")
+                .append(requestedAt.format(DateTimeFormatter.ISO_INSTANT))
+                .append("\"")
+                .append("}")
+                .toString();
 
-        PaymentDetailToSend payToSend = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
+//        PaymentDetailToSend payToSend = new PaymentDetailToSend(
+//                paymentDetail.correlationId(),
+//                paymentDetail.amount(),
+//                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
 
         ResponseEntity<Void> defaultResponse = webClient
                 .post()
@@ -67,18 +72,23 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
     }
 
     public void sendPaymentToFallback(PaymentDetail paymentDetail, OffsetDateTime requestedAt) {
-        //        String payToSend = new StringBuilder("{")
-        //                .append("\"correlationId\":\"").append(paymentDetail.correlationId()).append("\",")
-        //                .append("\"amount\":").append(paymentDetail.amount().toPlainString()).append(",")
-        //
-        // .append("\"requestedAt\":\"").append(requestedAt.format(DateTimeFormatter.ISO_INSTANT)).append("\"")
-        //                .append("}")
-        //                .toString();
+        String payToSend = new StringBuilder("{")
+                .append("\"correlationId\":\"")
+                .append(paymentDetail.correlationId())
+                .append("\",")
+                .append("\"amount\":")
+                .append(paymentDetail.amount().toPlainString())
+                .append(",")
+                .append("\"requestedAt\":\"")
+                .append(requestedAt.format(DateTimeFormatter.ISO_INSTANT))
+                .append("\"")
+                .append("}")
+                .toString();
 
-        PaymentDetailToSend payToSend = new PaymentDetailToSend(
-                paymentDetail.correlationId(),
-                paymentDetail.amount(),
-                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
+        //        PaymentDetailToSend payToSend = new PaymentDetailToSend(
+        //                paymentDetail.correlationId(),
+        //                paymentDetail.amount(),
+        //                requestedAt.format(DateTimeFormatter.ISO_INSTANT));
 
         ResponseEntity<Void> fallbackResponse = webClient
                 .post()
