@@ -1,0 +1,14 @@
+[
+  {
+    "name": "io.backendscience.rinha_backend_2025_java.adapter.outbound.PaymentDetailToSend",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  },
+  {
+    "name": "io.backendscience.rinha_backend_2025_java.domain.HealthCheckStatus",
+    "allDeclaredConstructors": true,
+    "allPublicMethods": true,
+    "allDeclaredFields": true
+  }
+]
