@@ -49,13 +49,11 @@ public class PaymentWorker {
     public void work() {
         isWorking.set(true);
         logger.info("Starting Payment Worker.");
-        //for (int i = 1; i <= 4; i++) {
         executorService.submit(() -> {
             logger.info("Payment Worker started.");
 
             while (true) {
                 if (semaphoreService.isWorkerPaused()) {
-                    logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
                     pauseFor(pausedDelay);
                     continue;
                 }
@@ -63,7 +61,6 @@ public class PaymentWorker {
                 PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
 
                 if (paymentType == PaymentProcessorType.NONE) {
-                    logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
                     pauseFor(stoppedDelay);
                     continue;
                 } else if (paymentType == PaymentProcessorType.FALLBACK) {
@@ -71,8 +68,6 @@ public class PaymentWorker {
                 }
 
                 PaymentDetail payment = workerQueue.take();
-
-                logger.info("WORKER: is going to execute.");
 
                 pauseFor(threadDelay);
 
@@ -87,7 +82,6 @@ public class PaymentWorker {
                 });
             }
         });
-        //}
     }
 
     private void pauseFor(long milliseconds) {
