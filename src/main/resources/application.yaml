@@ -12,6 +12,9 @@ payment-backend:
   worker:
     fallback-delay: ${PAYMENT_BACKEND_WORKER_FALLBACK_DELAY:50}
     thread-delay: ${PAYMENT_BACKEND_WORKER_THREAD_DELAY:2}
+    paused-delay: ${PAYMENT_BACKEND_WORKER_PAUSED_DELAY:100}
+    stopped-delay: ${PAYMENT_BACKEND_WORKER_STOPPED_DELAY:500}
+    exception-delay: ${PAYMENT_BACKEND_WORKER_EXCEPTION_DELAY:500}
 
 payment-processor:
   default-url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://localhost:8001}

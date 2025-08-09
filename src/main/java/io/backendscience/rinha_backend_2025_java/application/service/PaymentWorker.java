@@ -23,6 +23,15 @@ public class PaymentWorker {
     @Value("${payment-backend.worker.thread-delay}")
     private long threadDelay;
 
+    @Value("${payment-backend.worker.paused-delay}")
+    private long pausedDelay;
+
+    @Value("${payment-backend.worker.stopped-delay}")
+    private long stoppedDelay;
+
+    @Value("${payment-backend.worker.exception-delay}")
+    private long exceptionDelay;
+
     private final BlockingQueue<PaymentDetail> workerQueue = new LinkedBlockingQueue<>();
     private final Logger logger = Logger.getLogger(PaymentWorker.class.getName());
     private final PaymentService paymentService;
@@ -47,7 +56,7 @@ public class PaymentWorker {
             while (true) {
                 if (semaphoreService.isWorkerPaused()) {
                     logger.severe("WORKER: PARADO POR GET SUMMARY ----------------------------------------------: ");
-                    pauseFor(100);
+                    pauseFor(pausedDelay);
                     continue;
                 }
 
@@ -55,7 +64,7 @@ public class PaymentWorker {
 
                 if (paymentType == PaymentProcessorType.NONE) {
                     logger.severe("WORKER: PARADO POR STOPPED ----------------------------------------------: ");
-                    pauseFor(500);
+                    pauseFor(stoppedDelay);
                     continue;
                 } else if (paymentType == PaymentProcessorType.FALLBACK) {
                     pauseFor(fallbackDelay);
@@ -72,7 +81,7 @@ public class PaymentWorker {
                         paymentService.process(payment, paymentType);
                     } catch (Exception e) {
                         healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
-                        pauseFor(500);
+                        pauseFor(exceptionDelay);
                         workerQueue.add(payment);
                     }
                 });
