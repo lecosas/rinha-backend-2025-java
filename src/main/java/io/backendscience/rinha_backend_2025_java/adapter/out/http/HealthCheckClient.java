@@ -48,6 +48,7 @@ public class HealthCheckClient implements HealthCheckGateway {
                     return Mono.empty();
                 })
                 .toEntity(HealthCheckStatus.class)
+                .doOnError(Throwable::printStackTrace)
                 .block();
 
         if (healthCheckStatusResponse.getStatusCode().is2xxSuccessful()) {

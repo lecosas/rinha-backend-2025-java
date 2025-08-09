@@ -26,10 +26,11 @@ public class WarmupService implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        paymentProcessorWarmup();
         purgePaymentsService.execute();
 
         for (int i = 0; i < 100; i++) {
+            paymentProcessorWarmup();
+
             healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
 
             logger.info("Setting PaymentWorker to working state.");

@@ -55,11 +55,10 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.3"
-          memory: "30MB"
+          cpus: "0.4"
+          memory: "50MB"
 
   backend-01: &backend
-    #image: docker.io/library/rinha-backend-2025-java:0.0.1-SNAPSHOT
 #    image: lecosas/rinha-backend-2025-java-spring:latest
     image: lecosas/rinha-backend-2025-java-spring-graalvm:latest
     container_name: backend-01
@@ -70,7 +69,7 @@ services:
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
-      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=70
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
@@ -89,8 +88,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: "0.55"
-          memory: "140MB"
+          cpus: "0.5"
+          memory: "130MB"
 
   backend-02:
     <<: *backend
@@ -99,7 +98,7 @@ services:
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
-      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=70
+      - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - HTTPCLIENT_CONNECTION_TIMEOUT=5000
       - HTTPCLIENT_READ_TIMEOUT=10000
