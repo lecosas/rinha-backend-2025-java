@@ -49,7 +49,7 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
             }
         }
 
-        pauseFor(10);
+        pauseFor(exceptionDelay);
         paymentWorker.addToQueue(paymentDetail);
         paymentWorker.startExecution();
     }
