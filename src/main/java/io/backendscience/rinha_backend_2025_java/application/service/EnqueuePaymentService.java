@@ -7,15 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 
 @Component
 @RequiredArgsConstructor
 public class EnqueuePaymentService implements EnqueuePaymentUseCase {
 
-    @Value("${payment-backend.main-instance}")
-    private Boolean isMainInstance;
+    @Value("${payment-backend.enqueue.delay}")
+    private long exceptionDelay;
 
     private final Logger logger = Logger.getLogger(EnqueuePaymentService.class.getName());
 
@@ -29,12 +28,13 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
     public void execute(PaymentDetail paymentDetail) {
         paymentSummaryService.setFixedAmount(paymentDetail.amount());
 
-////                if (isMainInstance && !healthCheckEngine.isExecuting()) {
-////                    healthCheckEngine.startExecuting();
-////                }
-//
-//        paymentWorker.startExecution();
-//        paymentWorker.addToQueue(paymentDetail);
+        paymentWorker.addToQueue(paymentDetail);
+        paymentWorker.startExecution();
+    }
+
+    @Override
+    public void tryProcessOrEnqueue(PaymentDetail paymentDetail) {
+        paymentSummaryService.setFixedAmount(paymentDetail.amount());
 
         if (!semaphoreService.isWorkerPaused()) {
             PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();

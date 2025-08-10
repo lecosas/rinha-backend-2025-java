@@ -5,4 +5,5 @@ import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 public interface EnqueuePaymentUseCase {
 
     void execute(PaymentDetail paymentDetail);
+    void tryProcessOrEnqueue(PaymentDetail paymentDetail);
 }

@@ -28,7 +28,7 @@ public class WarmupService implements CommandLineRunner {
     public void run(String... args) throws Exception {
         purgePaymentsService.execute();
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 1000; i++) {
             paymentProcessorWarmup();
 
             healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);

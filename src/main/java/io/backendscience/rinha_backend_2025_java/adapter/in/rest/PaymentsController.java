@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 @RestController
@@ -31,42 +28,33 @@ public class PaymentsController {
     private final GetPaymentSummaryUseCase getPaymentSummaryUC;
     private final PurgePaymentsUseCase purgePaymentsUC;
     private final EnqueuePaymentUseCase enqueuePaymentUC;
-//    private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
 
     @PostMapping("/payments/{amount}")
     public void postSlimPaymentsController(@PathVariable BigDecimal amount) {
-
         logger.info("START: Controller postPaymentsController.");
 
         long startTime = System.nanoTime();
 
-
-//        CompletableFuture.supplyAsync(() -> {
-            PaymentDetail paymentDetail = new PaymentDetail(UUID.randomUUID().toString(), amount);
-            enqueuePaymentUC.execute(paymentDetail);
-//            return null;
-//        }, executorService);
-
-//        if (((System.nanoTime() - startTime) / 1_000_000.0) < 100)
-//            pauseFor(100 - (System.nanoTime() - startTime) / 1_000_000);
+        PaymentDetail paymentDetail = new PaymentDetail(UUID.randomUUID().toString(), amount);
+        enqueuePaymentUC.tryProcessOrEnqueue(paymentDetail);
 
         logger.info(String.format(
                 "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
-//    @PostMapping("/payments")
-//    public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
-//        logger.info("START: Controller postPaymentsController.");
-//
-//        long startTime = System.nanoTime();
-//
-//        PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
-//
-//        enqueuePaymentUC.execute(paymentDetail);
-//
-//        logger.info(String.format(
-//                "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
-//    }
+    @PostMapping("/payments")
+    public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
+        logger.info("START: Controller postPaymentsController.");
+
+        long startTime = System.nanoTime();
+
+        PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
+
+        enqueuePaymentUC.execute(paymentDetail);
+
+        logger.info(String.format(
+                "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
+    }
 
     @GetMapping("/payments-summary")
     public ResponseEntity<PaymentSummary> getPaymentsSummary(

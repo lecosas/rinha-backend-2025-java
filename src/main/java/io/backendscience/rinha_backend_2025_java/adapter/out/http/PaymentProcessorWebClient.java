@@ -55,14 +55,14 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .uri(paymentProcessorDefaultUrl + "/payments")
                 .bodyValue(payToSend)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.warning(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
-                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
-                    logger.severe(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
+//                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+//                    logger.warning(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
+//                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
+//                    logger.severe(String.format("Error %s to send DEFAULT payment.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
                 .toBodilessEntity()
                 .block();
 
@@ -95,14 +95,14 @@ public class PaymentProcessorWebClient implements PaymentProcessorGateway {
                 .uri(paymentProcessorFallbackUrl + "/payments")
                 .bodyValue(payToSend)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.warning(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
-                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
-                    logger.severe(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
+//                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+//                    logger.warning(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
+//                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
+//                    logger.severe(String.format("Error %s to send FALLBACK payment.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
                 .toBodilessEntity()
                 .block();
 

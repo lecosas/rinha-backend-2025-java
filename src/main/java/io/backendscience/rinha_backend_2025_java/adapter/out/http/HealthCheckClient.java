@@ -39,14 +39,14 @@ public class HealthCheckClient implements HealthCheckGateway {
                 .get()
                 .uri(baseUrl + HEALTH_CHECK_ENDPOINT)
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
-                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
-                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
-                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
-                    return Mono.empty();
-                })
+//                .onStatus(HttpStatusCode::is4xxClientError, clientResponse -> {
+//                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
+//                .onStatus(HttpStatusCode::is5xxServerError, clientResponse -> {
+//                    logger.severe(String.format("Error %s to get health check status.", clientResponse.statusCode()));
+//                    return Mono.empty();
+//                })
                 .toEntity(HealthCheckStatus.class)
                 .doOnError(Throwable::printStackTrace)
                 .block();

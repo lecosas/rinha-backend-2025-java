@@ -39,16 +39,15 @@ public class PaymentWorker {
     private final HealthCheckEngine healthCheckEngine;
     private final AtomicBoolean isWorking = new AtomicBoolean(false);
     private final SemaphoreService semaphoreService;
-//    private final AtomicBoolean isExecuting = new AtomicBoolean(false);
 
     public void startExecution() {
-//        isWorking.set(true);
         if (!isWorking.get()) work();
     }
 
     public void work() {
         isWorking.set(true);
         logger.info("Starting Payment Worker.");
+
         executorService.submit(() -> {
             logger.info("Payment Worker started.");
 
@@ -95,9 +94,4 @@ public class PaymentWorker {
     public void addToQueue(PaymentDetail paymentDetail) {
         workerQueue.add(paymentDetail);
     }
-
-    public boolean isWorking() {
-        return isWorking.get();
-    }
-
 }

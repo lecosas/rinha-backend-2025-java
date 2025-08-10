@@ -8,6 +8,8 @@ httpclient:
   max-life-time: ${HTTPCLIENT_MAX_LIFE_TIME:60000}
 
 payment-backend:
+  enqueue:
+    delay: ${PAYMENT_BACKEND_ENQUEUE_DELAY:10}
   main-instance: ${PAYMENT_BACKEND_MAIN_INSTANCE:false}
   worker:
     fallback-delay: ${PAYMENT_BACKEND_WORKER_FALLBACK_DELAY:50}
