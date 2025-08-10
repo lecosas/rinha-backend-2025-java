@@ -11,6 +11,13 @@ payment-backend:
   enqueue:
     delay: ${PAYMENT_BACKEND_ENQUEUE_DELAY:10}
   main-instance: ${PAYMENT_BACKEND_MAIN_INSTANCE:false}
+  summary:
+    delay-1: ${PAYMENT_BACKEND_SUMMARY_DELAY_1:20}
+    delay-2: ${PAYMENT_BACKEND_SUMMARY_DELAY_2:10}
+    delay-3: ${PAYMENT_BACKEND_SUMMARY_DELAY_3:20}
+    delay-4: ${PAYMENT_BACKEND_SUMMARY_DELAY_4:10}
+  warmup:
+    cycles: ${PAYMENT_BACKEND_WARMUP_CYCLES:500}
   worker:
     fallback-delay: ${PAYMENT_BACKEND_WORKER_FALLBACK_DELAY:50}
     thread-delay: ${PAYMENT_BACKEND_WORKER_THREAD_DELAY:2}
@@ -36,7 +43,25 @@ redis:
   url: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
 
 server:
+  ssl:
+    enabled: false
   port: 8080
+  tomcat:
+#    accesslog:
+#      enabled: true
+    accept-count: 1000
+    #    connection-timeout:
+    #    keep-alive-timeout:
+    max-connections: 100
+    #    max-http-form-post-size:
+    #    max-http-response-header-size:
+#    max-keep-alive-requests: 1
+    #    processor-cache:
+#    threads:
+#      max: 1000 #default: 200 Doesn't have an effect if virtual threads are enabled.
+#      #      max-queue-capacity: 2147483647 (default)
+#      min-spare: 500 #default: 10 Doesn't have an effect if virtual threads are enabled.
+
 
 spring:
   application:

@@ -4,6 +4,7 @@ import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentPro
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentProcessorType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
@@ -17,18 +18,24 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class WarmupService implements CommandLineRunner {
 
+    @Value("${payment-backend.warmup.cycles}")
+    private long warmupCycles;
+
     private final PaymentProcessorGateway paymentProcessor;
     private final Logger logger = Logger.getLogger(WarmupService.class.getName());
     private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
     private final SemaphoreService semaphoreService;
-    private final PaymentWorker paymentWorker;
 
     @Override
     public void run(String... args) throws Exception {
+        logger.severe("START: Warmup");
+
+        long startTime = System.nanoTime();
+
         purgePaymentsService.execute();
 
-        for (int i = 0; i < 1000; i++) {
+        for (int i = 0; i < warmupCycles; i++) {
             paymentProcessorWarmup();
 
             healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.DEFAULT);
@@ -45,11 +52,10 @@ public class WarmupService implements CommandLineRunner {
         healthCheckEngine.startExecution();
 
         // paymentWorker.startExecution();
+        logger.severe(String.format("END: Warmup in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
     private void paymentProcessorWarmup() {
-        logger.info("Starting PaymentProcessor warmup");
-
         PaymentDetail paymentDetail = new PaymentDetail("INVALID", BigDecimal.ZERO);
 
         try {
@@ -65,7 +71,5 @@ public class WarmupService implements CommandLineRunner {
         } catch (Exception ex) {
 
         }
-
-        logger.info("Finishing PaymentProcessor warmup");
     }
 }

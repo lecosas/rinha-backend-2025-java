@@ -1,43 +1,6 @@
 services:
-#  haproxy:
-#    image: haproxy:alpine
-#    container_name: haproxy
-#    ports:
-#      - "9999:9999"
-#    volumes:
-#      - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
-#    depends_on:
-#      - backend-01
-#      - backend-02
-#    networks:
-#      - backend
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.3"
-#          memory: "40MB"
-
-#  nginx:
-#    image: nginx:alpine
-#    container_name: nginx
-#    ports:
-#      - "9999:9999"
-#    volumes:
-#      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-#    depends_on:
-#      - backend-01
-#      - backend-02
-#    networks:
-#      - backend
-#    deploy:
-#      resources:
-#        limits:
-#          cpus: "0.3"
-#          memory: "40MB"
-
   openresty:
     image: openresty/openresty:alpine
-#    image: lecosas/openresty-rinha-alpine:latest
     container_name: openresty
     ports:
       - "9999:9999"
@@ -63,12 +26,18 @@ services:
     image: lecosas/rinha-backend-2025-java-spring-graalvm:latest
     container_name: backend-01
     hostname: backend-01
+    pull_policy: always
     networks:
       - backend
       - payment-processor
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=true
+      - PAYMENT_BACKEND_SUMMARY_DELAY_1=20
+      - PAYMENT_BACKEND_SUMMARY_DELAY_2=10
+      - PAYMENT_BACKEND_SUMMARY_DELAY_3=20
+      - PAYMENT_BACKEND_SUMMARY_DELAY_4=10
+      - PAYMENT_BACKEND_WARMUP_CYCLES=500
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - PAYMENT_BACKEND_WORKER_PAUSED_DELAY=50
@@ -102,6 +71,11 @@ services:
     environment:
       #- SPRING_PROFILES_ACTIVE=prod
       - PAYMENT_BACKEND_MAIN_INSTANCE=false
+      - PAYMENT_BACKEND_SUMMARY_DELAY_1=20
+      - PAYMENT_BACKEND_SUMMARY_DELAY_2=10
+      - PAYMENT_BACKEND_SUMMARY_DELAY_3=20
+      - PAYMENT_BACKEND_SUMMARY_DELAY_4=10
+      - PAYMENT_BACKEND_WARMUP_CYCLES=500
       - PAYMENT_BACKEND_WORKER_FALLBACK_DELAY=5
       - PAYMENT_BACKEND_WORKER_THREAD_DELAY=0
       - PAYMENT_BACKEND_WORKER_PAUSED_DELAY=50

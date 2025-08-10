@@ -4,6 +4,7 @@ import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentS
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentRepository;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -15,6 +16,19 @@ import java.util.concurrent.Executors;
 @Component
 @RequiredArgsConstructor
 public class PaymentSummaryService implements GetPaymentSummaryUseCase {
+
+    @Value("${payment-backend.summary.delay-1}")
+    private long delay1;
+
+    @Value("${payment-backend.summary.delay-2}")
+    private long delay2;
+
+    @Value("${payment-backend.summary.delay-3}")
+    private long delay3;
+
+    @Value("${payment-backend.summary.delay-4}")
+    private long delay4;
+
     private final PaymentRepository paymentRepository;
     private final SemaphoreService semaphoreService;
 
@@ -27,9 +41,9 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
 
         semaphoreService.pauseWorker();
 
-        pauseFor(20);
+        pauseFor(delay1);
         waitToSaveLocalData();
-        pauseFor(20);
+        pauseFor(delay3);
 
         CompletableFuture<Long> taskCountDefault = CompletableFuture.supplyAsync(
                 () -> paymentRepository.countPaymentDefault(fromTimestamp, toTimestamp), executor);
@@ -46,7 +60,7 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
             throw new RuntimeException(e);
         }
 
-        pauseFor(10);
+        pauseFor(delay4);
         semaphoreService.resumeWorker();
 
         return new PaymentSummary(
@@ -65,7 +79,7 @@ public class PaymentSummaryService implements GetPaymentSummaryUseCase {
         int i = 1;
         while (semaphoreService.isSavingLocalData() && i <= 100) {
             i++;
-            pauseFor(10);
+            pauseFor(delay2);
         }
     }
 
