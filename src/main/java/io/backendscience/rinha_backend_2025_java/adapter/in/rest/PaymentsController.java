@@ -42,6 +42,19 @@ public class PaymentsController {
                 "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
+    @PostMapping("/payments-async")
+    public void postPaymentsAsyncController(@RequestBody PaymentBody paymentBody) {
+        logger.info("START: Controller postPaymentsAsyncController.");
+
+        long startTime = System.nanoTime();
+
+        PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
+        enqueuePaymentUC.tryProcessOrEnqueue(paymentDetail);
+
+        logger.info(String.format(
+                "END: Controller postPaymentsAsyncController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
+    }
+
     @PostMapping("/payments")
     public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
         logger.info("START: Controller postPaymentsController.");
