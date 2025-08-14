@@ -39,14 +39,10 @@ public class HealthCheckRestClient implements HealthCheckGateway {
                 .uri(baseUrl + HEALTH_CHECK_ENDPOINT)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    logger.info("Error 400 to send: " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
-                    //                    return null;
+                    logger.severe(String.format("Error %s to get health check status.", res.getStatusCode()));
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                    logger.info("Error 500 to send: " + res.getStatusCode());
-                    // Handle Todo not found (500) or other errors
-                    // Handle 5xx server errors here
+                    logger.severe(String.format("Error %s to get health check status.", res.getStatusCode()));
                 })
                 .toEntity(HealthCheckStatus.class);
 

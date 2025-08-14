@@ -2,44 +2,36 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
-    </parent>
+<!--    <parent>-->
+<!--        <groupId>org.springframework.boot</groupId>-->
+<!--        <artifactId>spring-boot-starter-parent</artifactId>-->
+<!--        <version>3.5.3</version>-->
+<!--        <relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+<!--    </parent>-->
     <groupId>io.backendscience</groupId>
     <artifactId>rinha-backend-2025-java</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>rinha-backend-2025-java</name>
     <description>Projeto para Rinha de Backend 2025</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
     <properties>
         <java.version>24</java.version>
     </properties>
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-annotations -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>org.springframework.boot</groupId>-->
+<!--            <artifactId>spring-boot-starter-web</artifactId>-->
 <!--            			<exclusions>-->
 <!--            				<exclusion>-->
 <!--            					<groupId>org.springframework.boot</groupId>-->
 <!--            					<artifactId>spring-boot-starter-tomcat</artifactId>-->
 <!--            				</exclusion>-->
 <!--            			</exclusions>-->
-        </dependency>
+<!--        </dependency>-->
 <!--        		<dependency>-->
 <!--        			<groupId>org.springframework.boot</groupId>-->
 <!--        			<artifactId>spring-boot-starter-undertow</artifactId>-->

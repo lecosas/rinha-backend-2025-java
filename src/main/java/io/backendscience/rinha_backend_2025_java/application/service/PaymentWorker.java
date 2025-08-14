@@ -47,40 +47,41 @@ public class PaymentWorker {
     public void work() {
         isWorking.set(true);
         logger.info("Starting Payment Worker.");
+        for (int i = 1; i < 200; i++) {
+            executorService.submit(() -> {
+                logger.info("Payment Worker started.");
 
-        executorService.submit(() -> {
-            logger.info("Payment Worker started.");
-
-            while (true) {
-                if (semaphoreService.isWorkerPaused()) {
-                    pauseFor(pausedDelay);
-                    continue;
-                }
-
-                PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
-
-                if (paymentType == PaymentProcessorType.NONE) {
-                    pauseFor(stoppedDelay);
-                    continue;
-                } else if (paymentType == PaymentProcessorType.FALLBACK) {
-                    pauseFor(fallbackDelay);
-                }
-
-                PaymentDetail payment = workerQueue.take();
-
-                pauseFor(threadDelay);
-
-                executorService.execute(() -> {
-                    try {
-                        paymentService.process(payment, paymentType);
-                    } catch (Exception e) {
-                        healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
-                        pauseFor(exceptionDelay);
-                        workerQueue.add(payment);
+                while (true) {
+                    if (semaphoreService.isWorkerPaused()) {
+                        pauseFor(pausedDelay);
+                        continue;
                     }
-                });
-            }
-        });
+
+                    PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
+
+                    if (paymentType == PaymentProcessorType.NONE) {
+                        pauseFor(stoppedDelay);
+                        continue;
+                    } else if (paymentType == PaymentProcessorType.FALLBACK) {
+                        pauseFor(fallbackDelay);
+                    }
+
+                    PaymentDetail payment = workerQueue.take();
+
+                    pauseFor(threadDelay);
+
+//                    executorService.execute(() -> {
+                        try {
+                            paymentService.process(payment, paymentType);
+                        } catch (Exception e) {
+                            healthCheckEngine.setHeathCheckStatus(PaymentProcessorType.NONE);
+                            pauseFor(exceptionDelay);
+                            workerQueue.add(payment);
+                        }
+//                    });
+                }
+            });
+        }
     }
 
     private void pauseFor(long milliseconds) {

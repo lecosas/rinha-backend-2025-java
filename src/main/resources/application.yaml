@@ -29,8 +29,10 @@ payment-processor:
   default-url: ${PAYMENT_PROCESSOR_DEFAULT_URL:http://localhost:8001}
   fallback-url: ${PAYMENT_PROCESSOR_FALLBACK_URL:http://localhost:8002}
 
-#logging:
-#  level:
+logging:
+  level:
+    org.apache.tomcat: DEBUG
+    org.apache.catalina: DEBUG
 #    root: DEBUG
 #    org.springframework.web.client.RestClient: DEBUG
 #    org.apache.hc.client5.http: DEBUG
@@ -47,21 +49,27 @@ server:
     enabled: false
   port: 8080
 #  tomcat:
+#    basedir: .
 #    accesslog:
-#      enabled: true
-#    accept-count: 1000
-    #    connection-timeout:
-    #    keep-alive-timeout:
-#    max-connections: 100
-    #    max-http-form-post-size:
-    #    max-http-response-header-size:
-#    max-keep-alive-requests: 1
-    #    processor-cache:
+#      enabled: false
+#      directory: .
+#      directory: /Users/leandro/Downloads/logs
+#      prefix: access_log
+#      suffix: .log
+#      pattern: '%{begin:yyyy-MM-dd HH:mm:ss:SSS}t %{end:yyyy-MM-dd HH:mm:ss:SSS}t %h %l %u %r %s %b %Dms'
+#      buffered: false
+#    accept-count: ${PAYMENT_BACKEND_TOMCAT_ACCEPT_COUNT:10000}
+#    connection-timeout:
+#    keep-alive-timeout: ${PAYMENT_BACKEND_TOMCAT_KEEP_ALIVE_TIMEOUT:60000}
+#    max-connections: ${PAYMENT_BACKEND_TOMCAT_MAX_CONNECTIONS:500}
+#    max-http-form-post-size:
+#    max-http-response-header-size:
+#    max-keep-alive-requests: ${PAYMENT_BACKEND_TOMCAT_MAX_KEEP_ALIVE_REQUESTS:200}
+#    processor-cache:
 #    threads:
 #      max: 1000 #default: 200 Doesn't have an effect if virtual threads are enabled.
-#      #      max-queue-capacity: 2147483647 (default)
+#      max-queue-capacity: 2147483647 #(default)
 #      min-spare: 500 #default: 10 Doesn't have an effect if virtual threads are enabled.
-
 
 spring:
   application:
@@ -72,17 +80,18 @@ spring:
     exclude: org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration
   main:
     banner-mode: off
+    web-application-type: none
   threads:
     virtual:
       enabled: ${JAVA_VIRTUAL_THREADS:true}
-  undertow:
-    threads:
-      io: 2
-      worker: 16
-    buffer-size: 2048
-    direct-buffers: true
-#    eager-filter-init: false
-    accesslog:
-      enabled: false
-    always-set-keep-alive: false
-    max-http-post-size: 1KB
+#  undertow:
+#    threads:
+#      io: 2
+#      worker: 16
+#    buffer-size: 2048
+#    direct-buffers: true
+##    eager-filter-init: false
+#    accesslog:
+#      enabled: false
+#    always-set-keep-alive: false
+#    max-http-post-size: 1KB
