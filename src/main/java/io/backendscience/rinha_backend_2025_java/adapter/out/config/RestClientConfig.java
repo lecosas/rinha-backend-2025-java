@@ -51,7 +51,6 @@ public class RestClientConfig {
     @Bean
     public RestClient restClientDefault() {
         return RestClient.builder()
-                //.baseUrl(paymentProcessorDefaultUrl)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .requestFactory(this.clientHttpRequestFactory())
                 .build();

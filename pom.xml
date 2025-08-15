@@ -13,19 +13,6 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>rinha-backend-2025-java</name>
     <description>Projeto para Rinha de Backend 2025</description>
-    <url/>
-    <licenses>
-        <license/>
-    </licenses>
-    <developers>
-        <developer/>
-    </developers>
-    <scm>
-        <connection/>
-        <developerConnection/>
-        <tag/>
-        <url/>
-    </scm>
     <properties>
         <java.version>24</java.version>
     </properties>
@@ -44,10 +31,6 @@
 <!--        			<groupId>org.springframework.boot</groupId>-->
 <!--        			<artifactId>spring-boot-starter-undertow</artifactId>-->
 <!--        		</dependency>-->
-        <!--		<dependency>-->
-        <!--			<groupId>com.fasterxml.jackson.core</groupId>-->
-        <!--			<artifactId>jackson-databind</artifactId>-->
-        <!--		</dependency>-->
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>

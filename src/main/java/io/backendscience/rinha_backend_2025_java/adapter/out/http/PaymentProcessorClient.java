@@ -3,7 +3,6 @@ package io.backendscience.rinha_backend_2025_java.adapter.out.http;
 import io.backendscience.rinha_backend_2025_java.application.port.out.PaymentProcessorGateway;
 import io.backendscience.rinha_backend_2025_java.domain.PaymentDetail;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -36,30 +35,21 @@ public class PaymentProcessorClient implements PaymentProcessorGateway {
                 .append("}")
                 .toString();
 
-        ResponseEntity<Void> retorno = restClient
+        ResponseEntity<Void> defaultResponse = restClient
                 .post()
                 .uri(paymentProcessorDefaultUrl + "/payments")
                 .body(payToSend)
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> {
-                    logger.info("Success DEFAULT to send : " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
-                })
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    logger.info("Error 400 to send: " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
-                    //                    return null;
+                    logger.warning(String.format("Error %s to send DEFAULT payment.", res.getStatusCode()));
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                    logger.info("Error 500 to send: " + res.getStatusCode());
-                    // Handle Todo not found (500) or other errors
-                    // Handle 5xx server errors here
+                    logger.warning(String.format("Error %s to send DEFAULT payment.", res.getStatusCode()));
                 })
                 .toBodilessEntity();
 
-        if (!retorno.getStatusCode().is2xxSuccessful()) {
-            System.out.println(retorno);
-            throw new RuntimeException("deu erro");
+        if (!defaultResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Error sending the payment to the DEFAULT");
         }
     }
 
@@ -71,29 +61,21 @@ public class PaymentProcessorClient implements PaymentProcessorGateway {
                 .append("}")
                 .toString();
 
-        ResponseEntity<Void> retorno2 = restClient
+        ResponseEntity<Void> fallbackResponse = restClient
                 .post()
                 .uri(paymentProcessorFallbackUrl + "/payments")
                 .body(payToSend)
                 .retrieve()
-                .onStatus(HttpStatusCode::is2xxSuccessful, (req, res) -> {
-                    logger.info("Success FALLBACK to send : " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
-                })
                 .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
-                    logger.info("Error FALLBACK 400 to send: " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
+                    logger.warning(String.format("Error %s to send DEFAULT payment.", res.getStatusCode()));
                 })
                 .onStatus(HttpStatusCode::is5xxServerError, (req, res) -> {
-                    logger.info("Error FALLBACK 500 to send: " + res.getStatusCode());
-                    // Handle Todo not found (404) or other errors
-                    // Handle 5xx server errors here
+                    logger.warning(String.format("Error %s to send DEFAULT payment.", res.getStatusCode()));
                 })
                 .toBodilessEntity();
 
-        if (!retorno2.getStatusCode().is2xxSuccessful()) {
-            System.out.println(retorno2);
-            throw new RuntimeException("deu erro");
+        if (!fallbackResponse.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("Error sending the payment to the DEFAULT");
         }
     }
 

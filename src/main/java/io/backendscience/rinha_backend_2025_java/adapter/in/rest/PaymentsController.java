@@ -8,7 +8,6 @@ import io.backendscience.rinha_backend_2025_java.domain.PaymentSummary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.UUID;
 import java.util.logging.Logger;
 
 @RestController
@@ -29,34 +27,8 @@ public class PaymentsController {
     private final PurgePaymentsUseCase purgePaymentsUC;
     private final EnqueuePaymentUseCase enqueuePaymentUC;
 
-    @PostMapping("/payments/{amount}")
-    public void postSlimPaymentsController(@PathVariable BigDecimal amount) {
-        logger.info("START: Controller postPaymentsController.");
-
-        long startTime = System.nanoTime();
-
-        PaymentDetail paymentDetail = new PaymentDetail(UUID.randomUUID().toString(), amount);
-        enqueuePaymentUC.tryProcessOrEnqueue(paymentDetail);
-
-        logger.info(String.format(
-                "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
-    }
-
-    @PostMapping("/payments-async")
-    public void postPaymentsAsyncController(@RequestBody PaymentBody paymentBody) {
-        logger.info("START: Controller postPaymentsAsyncController.");
-
-        long startTime = System.nanoTime();
-
-        PaymentDetail paymentDetail = new PaymentDetail(paymentBody.correlationId, paymentBody.amount);
-        enqueuePaymentUC.tryProcessOrEnqueue(paymentDetail);
-
-        logger.info(String.format(
-                "END: Controller postPaymentsAsyncController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
-    }
-
     @PostMapping("/payments")
-    public void postPaymentsController(@RequestBody PaymentBody paymentBody) {
+    public ResponseEntity<Void> postPaymentsController(@RequestBody PaymentBody paymentBody) {
         logger.info("START: Controller postPaymentsController.");
 
         long startTime = System.nanoTime();
@@ -67,6 +39,8 @@ public class PaymentsController {
 
         logger.info(String.format(
                 "END: Controller postPaymentsController in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
+
+        return ResponseEntity.accepted().build();
     }
 
     @GetMapping("/payments-summary")
@@ -98,14 +72,6 @@ public class PaymentsController {
         logger.info(String.format(
                 "END: Controller postPurgePaymentsController in %.3fms",
                 (System.nanoTime() - startTime) / 1_000_000.0));
-    }
-
-    private void pauseFor(long milliseconds) {
-        try {
-            Thread.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public record PaymentBody(String correlationId, BigDecimal amount) {}
