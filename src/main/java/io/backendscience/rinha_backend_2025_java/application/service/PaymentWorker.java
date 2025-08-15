@@ -17,6 +17,9 @@ import java.util.logging.Logger;
 @RequiredArgsConstructor
 public class PaymentWorker {
 
+    @Value("${payment-backend.worker.count}")
+    private long count;
+
     @Value("${payment-backend.worker.fallback-delay}")
     private long fallbackDelay;
 
@@ -41,36 +44,36 @@ public class PaymentWorker {
     private final SemaphoreService semaphoreService;
 
     public void startExecution() {
-        if (!isWorking.get()) work();
+        if (isWorking.compareAndSet(false, true)) work();
     }
 
     public void work() {
-        isWorking.set(true);
-        logger.info("Starting Payment Worker.");
+        logger.severe("Starting Payment Worker.");
 
-        executorService.submit(() -> {
-            logger.info("Payment Worker started.");
+        for (int i = 1; i <= count; i++) {
+            executorService.submit(() -> {
+                logger.info("Payment Worker started.");
 
-            while (true) {
-                if (semaphoreService.isWorkerPaused()) {
-                    pauseFor(pausedDelay);
-                    continue;
-                }
+                while (true) {
+                    if (semaphoreService.isWorkerPaused()) {
+                        pauseFor(pausedDelay);
+                        continue;
+                    }
 
-                PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
+                    PaymentProcessorType paymentType = healthCheckEngine.getHeathCheckStatus();
 
-                if (paymentType == PaymentProcessorType.NONE) {
-                    pauseFor(stoppedDelay);
-                    continue;
-                } else if (paymentType == PaymentProcessorType.FALLBACK) {
-                    pauseFor(fallbackDelay);
-                }
+                    if (paymentType == PaymentProcessorType.NONE) {
+                        pauseFor(stoppedDelay);
+                        continue;
+                    } else if (paymentType == PaymentProcessorType.FALLBACK) {
+                        pauseFor(fallbackDelay);
+                    }
 
-                PaymentDetail payment = workerQueue.take();
+                    PaymentDetail payment = workerQueue.take();
 
-                pauseFor(threadDelay);
+                    pauseFor(threadDelay);
 
-                executorService.execute(() -> {
+//                    executorService.execute(() -> {
                     try {
                         paymentService.process(payment, paymentType);
                     } catch (Exception e) {
@@ -78,9 +81,10 @@ public class PaymentWorker {
                         pauseFor(exceptionDelay);
                         workerQueue.add(payment);
                     }
-                });
-            }
-        });
+//                    });
+                }
+            });
+        }
     }
 
     private void pauseFor(long milliseconds) {

@@ -26,6 +26,7 @@ public class WarmupService implements CommandLineRunner {
     private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
     private final SemaphoreService semaphoreService;
+    private final PaymentWorker paymentWorker;
 
     @Override
     public void run(String... args) throws Exception {
@@ -50,8 +51,10 @@ public class WarmupService implements CommandLineRunner {
         }
 
         healthCheckEngine.startExecution();
+        paymentWorker.startExecution();
 
-        // paymentWorker.startExecution();
+        pauseFor(100);
+
         logger.severe(String.format("END: Warmup in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
@@ -70,6 +73,14 @@ public class WarmupService implements CommandLineRunner {
                     paymentDetail, OffsetDateTime.now(ZoneOffset.UTC).truncatedTo(ChronoUnit.MILLIS));
         } catch (Exception ex) {
 
+        }
+    }
+
+    private void pauseFor(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 }
