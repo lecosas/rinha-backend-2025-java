@@ -26,6 +26,7 @@ public class WarmupService implements CommandLineRunner {
     private final PurgePaymentsService purgePaymentsService;
     private final HealthCheckEngine healthCheckEngine;
     private final SemaphoreService semaphoreService;
+    private final PaymentWorker paymentWorker;
 
     @Override
     public void run(String... args) throws Exception {
@@ -51,7 +52,7 @@ public class WarmupService implements CommandLineRunner {
 
         healthCheckEngine.startExecution();
 
-        // paymentWorker.startExecution();
+        paymentWorker.startExecution();
         logger.severe(String.format("END: Warmup in %.3fms", (System.nanoTime() - startTime) / 1_000_000.0));
     }
 

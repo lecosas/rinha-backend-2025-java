@@ -51,7 +51,7 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
 
         pauseFor(exceptionDelay);
         paymentWorker.addToQueue(paymentDetail);
-        paymentWorker.startExecution();
+//        paymentWorker.startExecution();
     }
 
     private void pauseFor(long milliseconds) {

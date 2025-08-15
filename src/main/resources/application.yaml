@@ -19,6 +19,7 @@ payment-backend:
   warmup:
     cycles: ${PAYMENT_BACKEND_WARMUP_CYCLES:500}
   worker:
+    count: ${PAYMENT_BACKEND_WORKER_COUNT:200}
     fallback-delay: ${PAYMENT_BACKEND_WORKER_FALLBACK_DELAY:50}
     thread-delay: ${PAYMENT_BACKEND_WORKER_THREAD_DELAY:2}
     paused-delay: ${PAYMENT_BACKEND_WORKER_PAUSED_DELAY:100}
