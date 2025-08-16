@@ -1,5 +1,6 @@
 package io.backendscience.rinha_backend_2025_java.adapter.in.rest;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.backendscience.rinha_backend_2025_java.application.port.in.EnqueuePaymentUseCase;
 import io.backendscience.rinha_backend_2025_java.application.port.in.GetPaymentSummaryUseCase;
 import io.backendscience.rinha_backend_2025_java.application.port.in.PurgePaymentsUseCase;
@@ -74,5 +75,6 @@ public class PaymentsController {
                 (System.nanoTime() - startTime) / 1_000_000.0));
     }
 
-    public record PaymentBody(String correlationId, BigDecimal amount) {}
+    public record PaymentBody(
+            @JsonProperty("correlationId") String correlationId, @JsonProperty("amount") BigDecimal amount) {}
 }

@@ -48,7 +48,7 @@ public class PaymentWorker {
     }
 
     public void work() {
-        logger.severe("Starting Payment Worker.");
+        logger.severe(String.format("Starting [%s] Payment Workers.", count));
 
         for (int i = 1; i <= count; i++) {
             executorService.submit(() -> {
@@ -73,7 +73,6 @@ public class PaymentWorker {
 
                     pauseFor(threadDelay);
 
-//                    executorService.execute(() -> {
                     try {
                         paymentService.process(payment, paymentType);
                     } catch (Exception e) {
@@ -81,7 +80,6 @@ public class PaymentWorker {
                         pauseFor(exceptionDelay);
                         workerQueue.add(payment);
                     }
-//                    });
                 }
             });
         }

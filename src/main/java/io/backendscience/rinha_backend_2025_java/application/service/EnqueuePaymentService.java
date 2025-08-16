@@ -27,7 +27,6 @@ public class EnqueuePaymentService implements EnqueuePaymentUseCase {
     @Override
     public void execute(PaymentDetail paymentDetail) {
         paymentSummaryService.setFixedAmount(paymentDetail.amount());
-
         paymentWorker.addToQueue(paymentDetail);
     }
 

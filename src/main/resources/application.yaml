@@ -56,13 +56,12 @@ server:
 #    max-connections: 100
     #    max-http-form-post-size:
     #    max-http-response-header-size:
-#    max-keep-alive-requests: 1
+#    max-keep-alive-requests: 200
     #    processor-cache:
 #    threads:
 #      max: 1000 #default: 200 Doesn't have an effect if virtual threads are enabled.
 #      #      max-queue-capacity: 2147483647 (default)
 #      min-spare: 500 #default: 10 Doesn't have an effect if virtual threads are enabled.
-
 
 spring:
   application:
@@ -76,14 +75,3 @@ spring:
   threads:
     virtual:
       enabled: ${JAVA_VIRTUAL_THREADS:true}
-  undertow:
-    threads:
-      io: 2
-      worker: 16
-    buffer-size: 2048
-    direct-buffers: true
-#    eager-filter-init: false
-    accesslog:
-      enabled: false
-    always-set-keep-alive: false
-    max-http-post-size: 1KB
